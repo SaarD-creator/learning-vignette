@@ -24,22 +24,18 @@ if st.session_state.page == "vraag":
 
     # Submit knop om feedback pas te geven na bevestiging
     if st.button("Submit answer"):
-        correct_of_dichtbij = False
-
         if 30 <= waarde <= 31:
-            st.success("Correct! Well done. The actual percentage is 30%.")
-            correct_of_dichtbij = True
+            st.success("Correct! Well done. The actual percentage is 30.02%.")
+            st.session_state.page = "spel"  # direct naar volgende pagina
+            st.rerun()
+
         elif 20 <= waarde <= 40:
-            st.info("You're close! The correct answer is 30%.")
-            correct_of_dichtbij = True
+            st.info("You're close! The correct answer is 30.02%.")
+            st.session_state.page = "spel"  # ook doorgaan bij dichtbij
+            st.rerun()
+
         else:
             st.error("Your answer is quite far from the actual percentage. Try thinking about it again.")
-
-        # knop om naar de volgende pagina te gaan
-        if correct_of_dichtbij:
-            if st.button("Go to the next page"):
-                st.session_state.page = "spel"
-                st.rerun()
 
 # ---- PAGINA 2 ----
 elif st.session_state.page == "spel":
