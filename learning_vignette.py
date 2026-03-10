@@ -1,10 +1,10 @@
 import streamlit as st
 
-# session state om bij te houden op welke pagina we zitten
+# pagina bijhouden
 if "page" not in st.session_state:
     st.session_state.page = "vraag"
 
-# ---- PAGINA 1: VRAAG ----
+# ---- PAGINA 1 ----
 if st.session_state.page == "vraag":
 
     st.title("Learning vignette")
@@ -14,31 +14,35 @@ if st.session_state.page == "vraag":
     col1, col2 = st.columns([3,1])
 
     with col1:
-        antwoord = st.text_input("Which percentage of employees in the health sector quit within their first year?")
+        antwoord = st.text_input(
+            "Which percentage of employees in the health sector quit within their first year?",
+            key="antwoord"
+        )
 
     with col2:
         st.write("%")
 
-    if antwoord:
+    if st.session_state.antwoord:
         try:
-            waarde = float(antwoord.replace(",", "."))
+            waarde = float(st.session_state.antwoord.replace(",", "."))
+
+            correct_of_dichtbij = False
 
             if 30 <= waarde <= 31:
                 st.success("Correct! Well done. The actual percentage is 30.02%.")
-
-                if st.button("Go to the next page"):
-                    st.session_state.page = "spel"
-                    st.rerun()
+                correct_of_dichtbij = True
 
             elif 20 <= waarde <= 40:
-                st.info("You're close! Your estimate is in the right range, but not quite correct.")
-
-                if st.button("Continue to the next page"):
-                    st.session_state.page = "spel"
-                    st.rerun()
+                st.info("You're close! The correct answer is 30.2%.")
+                correct_of_dichtbij = True
 
             else:
                 st.error("Your answer is quite far from the actual percentage. Try thinking about it again.")
+
+            if correct_of_dichtbij:
+                if st.button("Go to the next page"):
+                    st.session_state.page = "spel"
+                    st.rerun()
 
         except:
             st.warning("Please enter a valid number.")
