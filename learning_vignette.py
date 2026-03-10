@@ -12,29 +12,30 @@ if st.session_state.page == "vraag":
 
     col1, col2 = st.columns([3,1])
     with col1:
-        # number_input voorkomt warnings
         waarde = st.number_input(
             "Which percentage of employees in the health sector quit within their first year?",
-            min_value=0.0,
-            max_value=100.0,
-            step=0.1,
-            format="%.1f"
+            min_value=0,
+            max_value=100,
+            step=1,         # stap van 1%
+            format="%d"     # hele getallen
         )
     with col2:
         st.write("%")
 
-    if waarde > 0:  # alleen feedback tonen als iets is ingevuld
+    # Submit knop om feedback pas te geven na bevestiging
+    if st.button("Submit answer"):
         correct_of_dichtbij = False
 
         if 30 <= waarde <= 31:
-            st.success("Correct! Well done. The actual percentage is 30.02%.")
+            st.success("Correct! Well done. The actual percentage is 30%.")
             correct_of_dichtbij = True
         elif 20 <= waarde <= 40:
-            st.info("You're close! The correct answer is 30.2%.")
+            st.info("You're close! The correct answer is 30%.")
             correct_of_dichtbij = True
         else:
             st.error("Your answer is quite far from the actual percentage. Try thinking about it again.")
 
+        # knop om naar de volgende pagina te gaan
         if correct_of_dichtbij:
             if st.button("Go to the next page"):
                 st.session_state.page = "spel"
