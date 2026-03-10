@@ -66,42 +66,61 @@ if st.session_state.page == "vraag":
 
 # ---- PAGINA 2 ----
 elif st.session_state.page == "spel":
+    import time, random
+
     st.title("The Multitasking Trap")
 
-    # --- timing ---
-    elapsed = time.time() - st.session_state.task_start_time
-    current_task_index = st.session_state.task_index
+    # initialize game state
+    if "task_index" not in st.session_state:
+        st.session_state.task_index = 0
+        st.session_state.task_start_time = time.time()
+        st.session_state.task_results = []
+        st.session_state.clicked_icon = None
+        # 20 verschillende iconen
+        st.session_state.icons = [
+            "🔔","💊","📝","📂","🛏️","🩺","🧴","🧪","🩹","💉",
+            "🧷","🧻","🩻","🩺","🧫","🧹","🧪","📋","🩺","🧸"
+        ]
+        random.shuffle(st.session_state.icons)
+        # 4 taken
+        st.session_state.tasks = [
+            {"name":"Click the bell","icon":"🔔"},
+            {"name":"Click the medicine","icon":"💊"},
+            {"name":"Type 'admin'","icon":"📝"},
+            {"name":"Drag the patient to bed","icon":"🛏️"}
+        ]
 
-    # als alle taken klaar zijn
-    if current_task_index >= len(st.session_state.tasks):
+    elapsed = time.time() - st.session_state.task_start_time
+    current_index = st.session_state.task_index
+
+    # alle taken voltooid
+    if current_index >= len(st.session_state.tasks):
         st.balloons()
         st.success("All tasks done!")
     else:
-        # iedere 4 seconden nieuwe taak
+        # als 4 seconden voorbij zijn zonder juiste klik → fail
         if elapsed > 4:
-            # markeer niet aangeklikt als failed
-            if st.session_state.clicked_icon != st.session_state.tasks[current_task_index]["icon"]:
-                st.session_state.task_results.append({
-                    "task": st.session_state.tasks[current_task_index]["name"],
-                    "result": "failed"
-                })
-            # ga naar volgende taak
+            st.session_state.task_results.append({
+                "task": st.session_state.tasks[current_index]["name"],
+                "result": "failed"
+            })
             st.session_state.task_index += 1
             st.session_state.task_start_time = time.time()
             st.session_state.clicked_icon = None
             st.experimental_rerun()
 
-        # toon huidige taak
-        current_task = st.session_state.tasks[current_task_index]
+        # huidige taak tonen
+        current_task = st.session_state.tasks[current_index]
         st.subheader(f"Task: {current_task['name']} (click the correct icon!)")
 
-        # --- toon alle iconen random verspreid ---
+        # toon 20 iconen random verspreid met unieke keys
         cols = st.columns(5)
-        for icon in st.session_state.icons:
+        for idx, icon in enumerate(st.session_state.icons):
             col = random.choice(cols)
-            if col.button(icon):
+            # unieke key per icoon per run
+            if col.button(icon, key=f"{icon}_{idx}_{current_index}"):
                 st.session_state.clicked_icon = icon
-                # check of correct
+                # check correct
                 if icon == current_task["icon"]:
                     st.session_state.task_results.append({
                         "task": current_task["name"],
