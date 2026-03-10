@@ -1,7 +1,7 @@
 import streamlit as st
-import time
+import random
 
-# pagina bijhouden
+# ---- Pagina bijhouden ----
 if "page" not in st.session_state:
     st.session_state.page = "vraag"
 
@@ -46,58 +46,50 @@ if st.session_state.page == "vraag":
             if st.button("Go to the next page"):
                 st.session_state.page = "spel"
                 st.session_state.feedback_given = False  # reset voor volgende run
+                # init game state
+                st.session_state.task_step = 0
                 st.rerun()
 
-# ---- PAGINA 2 ----
-# pagina "spel"
-st.title("The Multitasking Trap")
 
-if "start_time" not in st.session_state:
-    st.session_state.start_time = time.time()
-    st.session_state.task_phase = 1  # fase 1 = makkelijk
-    st.session_state.tasks_done = []
+# ---- PAGINA 2: spel ----
+elif st.session_state.page == "spel":
+    st.title("The Multitasking Trap")
 
-# tijd sinds start
-elapsed = time.time() - st.session_state.start_time
+    # initialize game state
+    if "task_step" not in st.session_state:
+        st.session_state.task_step = 0
 
-# fase 2 na 10 seconden
-if elapsed > 10:
-    st.session_state.task_phase = 2
+    # takenlijst
+    tasks = [
+        {"name": "klik het belletje", "icon": "🔔"},
+        {"name": "leg de patiënt in bed", "icon": "🛏️"}
+    ]
 
-st.write("Simuleer het multitasken van healthcare workers!")
+    current_task = tasks[st.session_state.task_step]
 
-# ---- FASE 1: simpele taken ----
-if st.session_state.task_phase == 1:
-    st.subheader("Simple tasks:")
-    
-    col1, col2, col3 = st.columns(3)
+    st.subheader(f"Task: {current_task['name']}")
 
-    if col1.button("🔔 Patient call"):
-        st.session_state.tasks_done.append("Patient call done")
-        st.success("Patient call completed!")
-    if col2.button("💊 Click medicine icon"):
-        st.session_state.tasks_done.append("Medicine clicked")
-        st.success("Medicine clicked!")
-    if col3.button("📝 Type 'admin'"):
-        admin_input = st.text_input("Type 'admin' here:")
-        if admin_input.lower() == "admin":
-            st.session_state.tasks_done.append("Admin task done")
-            st.success("Admin task done!")
+    # simuleren van icoontjes verspreid over het scherm
+    cols = st.columns(5)
+    positions = list(range(5))
+    random.shuffle(positions)
 
-# ---- FASE 2: chaos ----
-elif st.session_state.task_phase == 2:
-    st.subheader("Chaos! Too many tasks at once! 😵")
-    st.write("Healthcare workers often juggle multiple responsibilities simultaneously.")
-    
-    col1, col2, col3, col4 = st.columns(4)
+    # toon icoontjes
+    clicked_correct = False
+    for i, col in enumerate(cols):
+        # de juiste icoon bij een random positie
+        if i == positions[0]:
+            if col.button(current_task["icon"]):
+                clicked_correct = True
+        else:
+            col.write("⬜")  # lege plek / distractor
 
-    if col1.button("🔔 Patient call"):
-        st.warning("Impossible to keep up!")
-    if col2.button("💊 Click medicine icon"):
-        st.warning("Impossible to keep up!")
-    if col3.button("📝 Type 'admin'"):
-        st.warning("Impossible to keep up!")
-    if col4.button("📂 Drag patient dossier"):
-        st.warning("Impossible to keep up!")
+    if clicked_correct:
+        st.success(f"Task '{current_task['name']}' completed!")
+        st.session_state.task_step += 1
+        st.experimental_rerun()  # laat de volgende taak zien
 
-st.write("Tasks done:", st.session_state.tasks_done)
+    # einde
+    if st.session_state.task_step >= len(tasks):
+        st.balloons()
+        st.write("All simple tasks completed! 🎉")
