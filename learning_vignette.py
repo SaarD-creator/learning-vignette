@@ -41,9 +41,6 @@ if st.session_state.page == "vraag":
                     st.session_state.antwoord = ""  # reset input voor toekomstige runs
                     st.rerun()
 
-        except:
-            st.warning("Please enter a valid number.")
-
 # ---- PAGINA 2 ----
 elif st.session_state.page == "spel":
     st.title("spel")
