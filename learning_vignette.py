@@ -1,10 +1,10 @@
 import streamlit as st
 
-st.title("Mijn eerste Streamlit App")
+st.title("Learning vignette")
 
-st.write("Hallo! Deze app draait via GitHub en Streamlit Cloud.")
+st.write("Welcome to the learning vignette of group 48. Please start by answering the next question:")
 
-naam = st.text_input("Wat is je naam?")
+vraag = st.text_input("Which percentage of employees in the health sector quit within their first year?")
 
-if naam:
-    st.write(f"Leuk je te ontmoeten, {naam}!")
+if vraag:
+    st.write(f"Leuk je te ontmoeten, !")
