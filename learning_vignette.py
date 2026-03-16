@@ -89,11 +89,10 @@ if st.session_state.page == "vraag":
 
 # ---- PAGINA 2 ----
 
-# ---- PAGINA 2 ----
 elif st.session_state.page == "spel":
 
     st.title("Hospital Shift Simulator")
-    st.write("Tasks keep arriving during your shift.")
+    st.write("Tasks appear while you work. Try to keep up.")
 
     st_autorefresh(interval=1000, key="refresh")
 
@@ -107,9 +106,9 @@ elif st.session_state.page == "spel":
         interval = 1
 
 
-    # ---- NIEUWE TAKEN TOEVOEGEN ----
+    # ---- NIEUWE TAKEN ----
 
-    if st.session_state.task_count < 16:
+    if st.session_state.task_count < 16:  # 3 + 3 + 10
 
         if time.time() - st.session_state.last_task_time > interval:
 
@@ -124,7 +123,6 @@ elif st.session_state.page == "spel":
     # ---- STRESS BEREKENEN ----
 
     stress_level = len(st.session_state.active_tasks) / 10
-
     if stress_level > 1:
         stress_level = 1
 
@@ -134,40 +132,52 @@ elif st.session_state.page == "spel":
 
     # ---- TAKEN BOVENAAN ----
 
-    st.subheader("Incoming tasks")
+    st.subheader("Current tasks")
 
     for task in st.session_state.active_tasks:
-        st.error(f"{task['name']} {task['icon']}")
-
+        st.warning(f"Click the {task['name']} {task['icon']}")
 
     st.divider()
 
 
-    # ---- ICON GRID (ALLEEN VISUEEL) ----
+    # ---- ICON GRID ----
 
     cols = st.columns(5)
 
-    for i, item in enumerate(st.session_state.icons[:10]):
+    for i, item in enumerate(st.session_state.icons):
 
         with cols[i % 5]:
-            st.markdown(
-                f"<div style='font-size:50px;text-align:center'>{item['icon']}</div>",
-                unsafe_allow_html=True
+
+            clicked = st.button(
+                item["icon"],
+                key=f"icon_{i}",
+                use_container_width=True
             )
 
+            # alleen verwerken als stress niet vol is
+            if clicked and stress_level < 1:
 
-    # ---- GAME OVER ALS STRESS VOL IS ----
+                for task in st.session_state.active_tasks:
+
+                    if task["icon"] == item["icon"]:
+
+                        st.session_state.completed_tasks.append(task)
+                        st.session_state.active_tasks.remove(task)
+                        break
+
+
+    # ---- GAME OVER ----
 
     if stress_level >= 1:
 
         st.error("Stress level critical.")
 
         st.write(
-            "The number of incoming tasks keeps increasing faster than they can be handled."
+            "Too many tasks piled up before they could be completed."
         )
 
         st.write(
-            "This illustrates the pressure healthcare workers experience during a shift."
+            "This simulates the workload pressure many healthcare workers experience."
         )
 
         st.stop()
