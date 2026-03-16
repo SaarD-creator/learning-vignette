@@ -1,6 +1,7 @@
 import streamlit as st
 import random
 import time
+from streamlit_autorefresh import st_autorefresh
 
 # ---- Pagina bijhouden ----
 if "page" not in st.session_state:
@@ -64,69 +65,52 @@ if st.session_state.page == "vraag":
                 ]
 
 # ---- PAGINA 2 ----
+st_autorefresh(interval=1000, key="game_refresh")
+
 elif st.session_state.page == "spel":
 
-    st.title("The Multitasking Trap")
+    st.title("Hospital Shift Simulator")
+    st.write("Tasks will appear while you work. Try to keep up!")
 
-    # --- init game state ---
-    if "task_index" not in st.session_state:
-        st.session_state.task_index = 0
-        st.session_state.task_start_time = time.time()
-        st.session_state.task_results = []
-        st.session_state.clicked_icon = None
-        st.session_state.icons = [
-            "🔔","💊","📝","📂","🛏️","🩺","🧴","🧪","🩹","💉",
-            "🧷","🧻","🩻","🩺","🧫","🧹","🧪","📋","🩺","🧸"
-        ]
-        random.shuffle(st.session_state.icons)
-        st.session_state.tasks = [
-            {"name":"Click the bell","icon":"🔔"},
-            {"name":"Click the medicine","icon":"💊"},
-            {"name":"Type 'admin'","icon":"📝"},
-            {"name":"Drag the patient to bed","icon":"🛏️"}
-        ]
+    # refresh elke seconde
+    st_autorefresh(interval=1000, key="game_refresh")
 
-    current_index = st.session_state.task_index
-    elapsed = time.time() - st.session_state.task_start_time
+    # 10 iconen tonen
+    icons = st.session_state.icons[:10]
 
-    # check of alle taken klaar zijn
-    if current_index >= len(st.session_state.tasks):
-        st.balloons()
-        st.success("All tasks done!")
+    cols = st.columns(5)
+    for i, icon in enumerate(icons):
+        with cols[i % 5]:
+            if st.button(icon, key=f"icon_{i}"):
+                # check of een taak dit icoon nodig had
+                for task in st.session_state.active_tasks:
+                    if task["icon"] == icon:
+                        st.session_state.completed_tasks.append(task)
+                        st.session_state.active_tasks.remove(task)
+                        break
 
-    else:
-        current_task = st.session_state.tasks[current_index]
+    # elke 7 seconden nieuwe taak
+    if time.time() - st.session_state.last_task_time > 7:
+        new_task = random.choice(st.session_state.tasks)
+        st.session_state.active_tasks.append({
+            "name": new_task["name"],
+            "icon": new_task["icon"],
+            "time": time.time()
+        })
+        st.session_state.last_task_time = time.time()
 
-        # check tijdsoverschrijding (4 sec) → failed
-        if elapsed > 4:
-            if st.session_state.clicked_icon != current_task["icon"]:
-                st.session_state.task_results.append({
-                    "task": current_task["name"],
-                    "result": "failed"
-                })
-            st.session_state.task_index += 1
-            st.session_state.task_start_time = time.time()
-            st.session_state.clicked_icon = None
+    st.divider()
+    st.subheader("Active tasks")
 
-        st.subheader(f"Task: {current_task['name']} (click the correct icon!)")
+    # taken tonen
+    for task in st.session_state.active_tasks:
+        if time.time() - task["time"] > 7:
+            st.session_state.failed_tasks.append(task)
+            st.session_state.active_tasks.remove(task)
+            st.write(f"❌ {task['name']}")
+        else:
+            st.write(f"⏳ {task['name']}")
 
-        # --- toon iconen met unieke keys ---
-        cols = st.columns(5)
-        for idx, icon in enumerate(st.session_state.icons):
-            col = random.choice(cols)
-            key_name = f"{icon}_{idx}_{current_index}"
-            clicked = col.button(icon, key=key_name)
-            if clicked:
-                st.session_state.clicked_icon = icon
-                if icon == current_task["icon"]:
-                    st.session_state.task_results.append({
-                        "task": current_task["name"],
-                        "result": "completed"
-                    })
-                    st.session_state.task_index += 1
-                    st.session_state.task_start_time = time.time()
-                    st.session_state.clicked_icon = None
-                else:
-                    st.warning("Wrong icon!")
-
-        st.write("Task results so far:", st.session_state.task_results)
+    st.subheader("Completed")
+    for task in st.session_state.completed_tasks:
+        st.write(f"✅ {task['name']}")
