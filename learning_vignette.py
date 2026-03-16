@@ -63,30 +63,28 @@ if st.session_state.page == "vraag":
                 st.session_state.page = "spel"
                 st.session_state.feedback_given = False
 
-                # ---- GAME INIT ----
+                # ---- ICON DEFINITIONS ----
 
                 st.session_state.icons = [
-                    "🔔","💊","📝","📂","🛏️",
-                    "🩺","🧴","🧪","🩹","💉",
-                    "🧷","🧻","🩻","🧫","🧹",
-                    "📋","🧸"
+                    {"icon":"🔔","name":"Call bell"},
+                    {"icon":"💊","name":"Medication"},
+                    {"icon":"🛏️","name":"Patient bed"},
+                    {"icon":"🩺","name":"Stethoscope"},
+                    {"icon":"💉","name":"Injection"},
+                    {"icon":"🧪","name":"Lab test"},
+                    {"icon":"📋","name":"Patient chart"},
+                    {"icon":"🧹","name":"Clean room"},
+                    {"icon":"🧴","name":"Disinfect"},
+                    {"icon":"🩹","name":"Bandage"}
                 ]
 
                 random.shuffle(st.session_state.icons)
 
-                st.session_state.tasks = [
-                    {"name":"Click the bell","icon":"🔔"},
-                    {"name":"Click the medicine","icon":"💊"},
-                    {"name":"Click the document","icon":"📋"},
-                    {"name":"Click the bed","icon":"🛏️"}
-                ]
-
                 st.session_state.active_tasks = []
                 st.session_state.completed_tasks = []
-                st.session_state.failed_tasks = []
 
+                st.session_state.task_count = 0
                 st.session_state.last_task_time = time.time()
-
 
 
 # ---- PAGINA 2 ----
@@ -96,83 +94,71 @@ elif st.session_state.page == "spel":
     st.title("Hospital Shift Simulator")
 
     st.write(
-        "Tasks will appear while you work. "
-        "Try to keep up with the workload."
+        "Tasks appear while you work. Complete them as fast as possible."
     )
 
-    # auto refresh elke seconde
-    st_autorefresh(interval=1000, key="game_refresh")
+    # refresh elke seconde
+    st_autorefresh(interval=1000, key="refresh")
 
-    # ---- ICON GRID ----
+    # ---- NIEUWE TASKS GENEREREN ----
 
-    icons = st.session_state.icons[:10]
+    if (
+        st.session_state.task_count < 3 and
+        time.time() - st.session_state.last_task_time > 7
+    ):
+
+        new_icon = random.choice(st.session_state.icons)
+
+        st.session_state.active_tasks.append(new_icon)
+
+        st.session_state.task_count += 1
+        st.session_state.last_task_time = time.time()
+
+
+    # ---- TAKEN BOVENAAN ----
+
+    st.subheader("Current tasks")
+
+    for task in st.session_state.active_tasks:
+        st.warning(f"Click the {task['name']} {task['icon']}")
+
+
+    st.divider()
+
+
+    # ---- ICON GRID (GROOT) ----
 
     cols = st.columns(5)
 
-    for i, icon in enumerate(icons):
+    for i, item in enumerate(st.session_state.icons):
 
         with cols[i % 5]:
 
-            if st.button(icon, key=f"icon_{i}"):
+            if st.button(
+                item["icon"],
+                key=f"icon_{i}",
+                use_container_width=True
+            ):
 
                 for task in st.session_state.active_tasks:
 
-                    if task["icon"] == icon:
+                    if task["icon"] == item["icon"]:
 
                         st.session_state.completed_tasks.append(task)
                         st.session_state.active_tasks.remove(task)
                         break
 
 
-    # ---- NIEUWE TASK ELKE 7 SECONDEN ----
+    # ---- RESULTAAT ----
 
-    if time.time() - st.session_state.last_task_time > 7:
+    if st.session_state.task_count == 3 and len(st.session_state.active_tasks) == 0:
 
-        new_task = random.choice(st.session_state.tasks)
+        st.success("Shift completed!")
 
-        st.session_state.active_tasks.append({
-            "name": new_task["name"],
-            "icon": new_task["icon"],
-            "time": time.time()
-        })
+        st.write(
+            f"You completed {len(st.session_state.completed_tasks)} tasks."
+        )
 
-        st.session_state.last_task_time = time.time()
-
-
-    st.divider()
-
-    # ---- ACTIEVE TAKEN ----
-
-    st.subheader("Active tasks")
-
-    tasks_to_remove = []
-
-    for task in st.session_state.active_tasks:
-
-        if time.time() - task["time"] > 7:
-
-            st.session_state.failed_tasks.append(task)
-            tasks_to_remove.append(task)
-
-        else:
-
-            st.write(f"⏳ {task['name']}")
-
-    for task in tasks_to_remove:
-        st.session_state.active_tasks.remove(task)
-
-
-    # ---- COMPLETED ----
-
-    st.subheader("Completed")
-
-    for task in st.session_state.completed_tasks:
-        st.write(f"✅ {task['name']}")
-
-
-    # ---- FAILED ----
-
-    st.subheader("Missed")
-
-    for task in st.session_state.failed_tasks:
-        st.write(f"❌ {task['name']}")
+        st.write(
+            "Healthcare workers constantly juggle multiple tasks under pressure."
+        )
