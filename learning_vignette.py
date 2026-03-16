@@ -89,6 +89,8 @@ if st.session_state.page == "vraag":
 
 # ---- PAGINA 2 ----
 
+# ---- PAGINA 2 ----
+
 elif st.session_state.page == "spel":
 
     st.title("Hospital Shift Simulator")
@@ -105,8 +107,7 @@ elif st.session_state.page == "spel":
     else:
         interval = 1
 
-
-    # ---- NIEUWE TAKEN ----
+    # ---- NIEUWE TAKEN TOEVOEGEN ----
 
     if st.session_state.task_count < 16:  # 3 + 3 + 10
 
@@ -119,29 +120,29 @@ elif st.session_state.page == "spel":
             st.session_state.task_count += 1
             st.session_state.last_task_time = time.time()
 
-
     # ---- STRESS BEREKENEN ----
+    # basis stress door open taken
+    base_stress = len(st.session_state.active_tasks) / 10
 
-    stress_level = len(st.session_state.active_tasks) / 10
+    # extra stress door fouten
+    if "error_tasks" not in st.session_state:
+        st.session_state.error_tasks = 0
+
+    stress_level = base_stress + (st.session_state.error_tasks * 0.1)
     if stress_level > 1:
         stress_level = 1
 
     st.subheader("Stress level")
     st.progress(stress_level)
 
-
     # ---- TAKEN BOVENAAN ----
-
     st.subheader("Current tasks")
-
     for task in st.session_state.active_tasks:
         st.warning(f"Click the {task['name']} {task['icon']}")
 
     st.divider()
 
-
     # ---- ICON GRID ----
-
     cols = st.columns(5)
 
     for i, item in enumerate(st.session_state.icons):
@@ -154,26 +155,34 @@ elif st.session_state.page == "spel":
                 use_container_width=True
             )
 
-            # alleen verwerken als stress niet vol is
-            if clicked and stress_level < 1:
+            if clicked:
 
+                if stress_level >= 1:
+                    continue  # spel stopt straks, klikken niet meer
+
+                # check of dit een actieve taak is
+                matched_task = None
                 for task in st.session_state.active_tasks:
-
                     if task["icon"] == item["icon"]:
-
-                        st.session_state.completed_tasks.append(task)
-                        st.session_state.active_tasks.remove(task)
+                        matched_task = task
                         break
 
+                if matched_task:
+                    # correcte klik
+                    st.session_state.completed_tasks.append(matched_task)
+                    st.session_state.active_tasks.remove(matched_task)
+                else:
+                    # fout: klik op een niet-actieve taak
+                    st.session_state.error_tasks += 1
+                    st.warning(f"⚠️ Wrong icon clicked! Stress increased.")
 
     # ---- GAME OVER ----
-
     if stress_level >= 1:
 
         st.error("Stress level critical.")
 
         st.write(
-            "Too many tasks piled up before they could be completed."
+            "Too many tasks piled up or too many mistakes. The shift is overwhelming!"
         )
 
         st.write(
