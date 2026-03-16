@@ -93,26 +93,45 @@ elif st.session_state.page == "spel":
 
     st.title("Hospital Shift Simulator")
 
-    st.write(
-        "Tasks appear while you work. Complete them as fast as possible."
-    )
+    st.write("Tasks appear while you work. Try to keep up.")
 
-    # refresh elke seconde
     st_autorefresh(interval=1000, key="refresh")
 
-    # ---- NIEUWE TASKS GENEREREN ----
+    # ---- INTERVAL BEPALEN ----
 
-    if (
-        st.session_state.task_count < 3 and
-        time.time() - st.session_state.last_task_time > 7
-    ):
+    if st.session_state.task_count < 3:
+        interval = 5
+    elif st.session_state.task_count < 6:
+        interval = 3
+    elif st.session_state.task_count < 9:
+        interval = 1
+    else:
+        interval = None
 
-        new_icon = random.choice(st.session_state.icons)
 
-        st.session_state.active_tasks.append(new_icon)
+    # ---- NIEUWE TASK ----
 
-        st.session_state.task_count += 1
-        st.session_state.last_task_time = time.time()
+    if interval is not None:
+
+        if time.time() - st.session_state.last_task_time > interval:
+
+            new_task = random.choice(st.session_state.icons)
+
+            st.session_state.active_tasks.append(new_task)
+
+            st.session_state.task_count += 1
+            st.session_state.last_task_time = time.time()
+
+
+    # ---- STRESS INDICATOR ----
+
+    stress_level = len(st.session_state.active_tasks) / 5
+    if stress_level > 1:
+        stress_level = 1
+
+    st.subheader("Stress level")
+
+    st.progress(stress_level)
 
 
     # ---- TAKEN BOVENAAN ----
@@ -126,7 +145,7 @@ elif st.session_state.page == "spel":
     st.divider()
 
 
-    # ---- ICON GRID (GROOT) ----
+    # ---- ICON GRID ----
 
     cols = st.columns(5)
 
@@ -149,16 +168,15 @@ elif st.session_state.page == "spel":
                         break
 
 
-    # ---- RESULTAAT ----
+    # ---- EINDE ----
 
-    if st.session_state.task_count == 3 and len(st.session_state.active_tasks) == 0:
+    if st.session_state.task_count == 9 and len(st.session_state.active_tasks) == 0:
 
         st.success("Shift completed!")
 
-        st.write(
-            f"You completed {len(st.session_state.completed_tasks)} tasks."
-        )
+        st.write(f"You completed {len(st.session_state.completed_tasks)} tasks.")
 
         st.write(
-            "Healthcare workers constantly juggle multiple tasks under pressure."
+            "Healthcare workers constantly juggle many tasks under pressure."
         )
+        
