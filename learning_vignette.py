@@ -266,23 +266,23 @@ elif st.session_state.page == "info":
     step = elapsed // 2
 
     teksten = [
-        "30 tot 35% van de zorgmedewerkers verlaat zijn job binnen het eerste jaar.",
-        "Dat betekent: bijna één op drie nieuwe medewerkers is weg… nog voor ze volledig ingewerkt zijn.",
-        "En dat terwijl de zorgsector al kampt met personeelstekorten.",
-        "We leiden mensen op, we rekruteren ze… en toch slagen we er niet in om hen te behouden.",
-        "De kern van het probleem? Transition shock.",
-        "De kloof tussen verwachting… en realiteit.",
-        "Nieuwe medewerkers botsen meteen op hoge werkdruk, emoties en verantwoordelijkheid.",
-        "Wat een groeifase zou moeten zijn, voelt vaak als overleven.",
-        "Gebrek aan zelfvertrouwen speelt een grote rol.",
-        "En zonder goede begeleiding voelen velen zich alleen.",
-        "Gevolg: mensen vertrekken… en de druk op de rest stijgt.",
-        "Een vicieuze cirkel ontstaat.",
-        "Het probleem zit niet in instroom.",
-        "Het probleem zit in retentie… in dat eerste jaar.",
-        "Als we echt impact willen maken, moeten we daar ingrijpen.",
-        "En dat is precies waar onze oplossing op focust."
-    ]
+    "30.2% of healthcare workers leave their job within the first year.",
+    "That means: nearly one in three new employees is gone… before they are fully trained.",
+    "And this is happening while the healthcare sector is already facing staff shortages.",
+    "We train people, we recruit them… yet we fail to retain them.",
+    "The core of the problem? Transition shock.",
+    "The gap between expectations… and reality.",
+    "New employees are immediately confronted with high workloads, intense emotions, and heavy responsibilities.",
+    "What should feel like a growth phase often feels like survival.",
+    "A lack of self-confidence plays a major role.",
+    "And without proper guidance, many feel left alone.",
+    "The result: people leave… and the pressure on those who remain increases.",
+    "A vicious cycle is created.",
+    "The problem is not inflow.",
+    "The problem is retention… in that first year.",
+    "If we truly want to make an impact, this is where we need to intervene.",
+    "And that is exactly what our solution focuses on."
+]
 
     for i in range(min(step + 1, len(teksten))):
         st.write(teksten[i])
