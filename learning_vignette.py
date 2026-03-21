@@ -11,6 +11,9 @@ if "page" not in st.session_state:
 if "feedback_given" not in st.session_state:
     st.session_state.feedback_given = False
 
+if "game_over_time" not in st.session_state:
+    st.session_state.game_over_time = None
+
 
 # ---- PAGINA 1 ----
 
@@ -175,47 +178,95 @@ elif st.session_state.page == "spel":
                     st.warning("⚠️ Wrong icon clicked! Stress increased.")
 
     # ---- GAME OVER OVERLAY ----
-    if st.session_state.game_over:
+if st.session_state.game_over:
 
-        st.markdown(
-            """
-            <style>
-            .overlay {
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background-color: rgba(0,0,0,0.7);
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                z-index: 9999;
-            }
-            .message-box {
-                background-color: white;
-                padding: 40px;
-                border-radius: 20px;
-                text-align: center;
-                max-width: 600px;
-                box-shadow: 0 0 30px rgba(0,0,0,0.3);
-            }
-            .message-box h1 {
-                color: red;
-                font-size: 40px;
-            }
-            .message-box p {
-                font-size: 20px;
-            }
-            </style>
+    if st.session_state.game_over_time is None:
+        st.session_state.game_over_time = time.time()
 
-            <div class="overlay">
-                <div class="message-box">
-                    <h1>⚠️ CRITICAL STRESS LEVEL</h1>
-                    <p>The workload has become overwhelming.</p>
-                    <p>This reflects the real pressure healthcare workers experience.</p>
-                </div>
+    st.markdown(
+        """
+        <style>
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+        .message-box {
+            background-color: white;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 600px;
+            box-shadow: 0 0 30px rgba(0,0,0,0.3);
+        }
+        .message-box h1 {
+            color: red;
+            font-size: 40px;
+        }
+        .message-box p {
+            font-size: 20px;
+        }
+        </style>
+
+        <div class="overlay">
+            <div class="message-box">
+                <h1>⚠️ CRITICAL STRESS LEVEL</h1>
+                <p>The workload has become overwhelming.</p>
+                <p>This reflects the real pressure healthcare workers experience.</p>
             </div>
-            """,
-            unsafe_allow_html=True
-        )
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+    # ⏱️ Na 5 seconden → volgende pagina
+    if time.time() - st.session_state.game_over_time > 5:
+        st.session_state.page = "info"
+        st.session_state.game_over_time = None
+        st.rerun()
+
+
+# ---- PAGINA 3 ----
+
+elif st.session_state.page == "info":
+
+    st.title("What’s really going on?")
+
+    st_autorefresh(interval=1000, key="info_refresh")
+
+    if "start_time_info" not in st.session_state:
+        st.session_state.start_time_info = time.time()
+
+    elapsed = int(time.time() - st.session_state.start_time_info)
+
+    # elke 2 seconden nieuwe zin
+    step = elapsed // 2
+
+    teksten = [
+        "30 tot 35% van de zorgmedewerkers verlaat zijn job binnen het eerste jaar.",
+        "Dat betekent: bijna één op drie nieuwe medewerkers is weg… nog voor ze volledig ingewerkt zijn.",
+        "En dat terwijl de zorgsector al kampt met personeelstekorten.",
+        "We leiden mensen op, we rekruteren ze… en toch slagen we er niet in om hen te behouden.",
+        "De kern van het probleem? Transition shock.",
+        "De kloof tussen verwachting… en realiteit.",
+        "Nieuwe medewerkers botsen meteen op hoge werkdruk, emoties en verantwoordelijkheid.",
+        "Wat een groeifase zou moeten zijn, voelt vaak als overleven.",
+        "Gebrek aan zelfvertrouwen speelt een grote rol.",
+        "En zonder goede begeleiding voelen velen zich alleen.",
+        "Gevolg: mensen vertrekken… en de druk op de rest stijgt.",
+        "Een vicieuze cirkel ontstaat.",
+        "Het probleem zit niet in instroom.",
+        "Het probleem zit in retentie… in dat eerste jaar.",
+        "Als we echt impact willen maken, moeten we daar ingrijpen.",
+        "En dat is precies waar onze oplossing op focust."
+    ]
+
+    for i in range(min(step + 1, len(teksten))):
+        st.write(teksten[i])
