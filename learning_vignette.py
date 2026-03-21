@@ -87,7 +87,6 @@ if st.session_state.page == "vraag":
                 st.session_state.last_task_time = time.time()
 
 
-# ---- PAGINA 2 ----
 
 # ---- PAGINA 2 ----
 
@@ -98,8 +97,11 @@ elif st.session_state.page == "spel":
 
     st_autorefresh(interval=1000, key="refresh")
 
-    # ---- INTERVAL BEPALEN ----
+    # ---- GAME OVER STATE ----
+    if "game_over" not in st.session_state:
+        st.session_state.game_over = False
 
+    # ---- INTERVAL BEPALEN ----
     if st.session_state.task_count < 3:
         interval = 5
     elif st.session_state.task_count < 6:
@@ -108,8 +110,7 @@ elif st.session_state.page == "spel":
         interval = 1
 
     # ---- NIEUWE TAKEN TOEVOEGEN ----
-
-    if st.session_state.task_count < 36:  # 3 + 3 + 10
+    if not st.session_state.game_over and st.session_state.task_count < 36:
 
         if time.time() - st.session_state.last_task_time > interval:
 
@@ -121,16 +122,16 @@ elif st.session_state.page == "spel":
             st.session_state.last_task_time = time.time()
 
     # ---- STRESS BEREKENEN ----
-    # basis stress door open taken
     base_stress = len(st.session_state.active_tasks) / 10
 
-    # extra stress door fouten
     if "error_tasks" not in st.session_state:
         st.session_state.error_tasks = 0
 
     stress_level = base_stress + (st.session_state.error_tasks * 0.1)
-    if stress_level > 1:
+
+    if stress_level >= 1:
         stress_level = 1
+        st.session_state.game_over = True
 
     st.subheader("Stress level")
     st.progress(stress_level)
@@ -157,10 +158,9 @@ elif st.session_state.page == "spel":
 
             if clicked:
 
-                if stress_level >= 1:
-                    continue  # spel stopt straks, klikken niet meer
+                if st.session_state.game_over:
+                    continue
 
-                # check of dit een actieve taak is
                 matched_task = None
                 for task in st.session_state.active_tasks:
                     if task["icon"] == item["icon"]:
@@ -168,25 +168,54 @@ elif st.session_state.page == "spel":
                         break
 
                 if matched_task:
-                    # correcte klik
                     st.session_state.completed_tasks.append(matched_task)
                     st.session_state.active_tasks.remove(matched_task)
                 else:
-                    # fout: klik op een niet-actieve taak
                     st.session_state.error_tasks += 1
-                    st.warning(f"⚠️ Wrong icon clicked! Stress increased.")
+                    st.warning("⚠️ Wrong icon clicked! Stress increased.")
 
-    # ---- GAME OVER ----
-    if stress_level >= 1:
+    # ---- GAME OVER OVERLAY ----
+    if st.session_state.game_over:
 
-        st.error("Stress level critical.")
+        st.markdown(
+            """
+            <style>
+            .overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(0,0,0,0.7);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                z-index: 9999;
+            }
+            .message-box {
+                background-color: white;
+                padding: 40px;
+                border-radius: 20px;
+                text-align: center;
+                max-width: 600px;
+                box-shadow: 0 0 30px rgba(0,0,0,0.3);
+            }
+            .message-box h1 {
+                color: red;
+                font-size: 40px;
+            }
+            .message-box p {
+                font-size: 20px;
+            }
+            </style>
 
-        st.write(
-            "Too many tasks piled up or too many mistakes. The shift is overwhelming!"
+            <div class="overlay">
+                <div class="message-box">
+                    <h1>⚠️ CRITICAL STRESS LEVEL</h1>
+                    <p>The workload has become overwhelming.</p>
+                    <p>This reflects the real pressure healthcare workers experience.</p>
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True
         )
-
-        st.write(
-            "This simulates the workload pressure many healthcare workers experience."
-        )
-
-        st.stop()
