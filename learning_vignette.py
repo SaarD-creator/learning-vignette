@@ -109,7 +109,7 @@ elif st.session_state.page == "spel":
 
     # ---- NIEUWE TAKEN TOEVOEGEN ----
 
-    if st.session_state.task_count < 16:  # 3 + 3 + 10
+    if st.session_state.task_count < 36:  # 3 + 3 + 10
 
         if time.time() - st.session_state.last_task_time > interval:
 
