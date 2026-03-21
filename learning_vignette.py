@@ -263,7 +263,7 @@ elif st.session_state.page == "info":
         st.session_state.start_time_info = time.time()
 
     elapsed = int(time.time() - st.session_state.start_time_info)
-    step = elapsed // 2.7
+    step = elapsed // 2,7
 
     teksten = [
     "30.2% of healthcare workers leave their job within the first year.",
