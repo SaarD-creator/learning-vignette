@@ -39,6 +39,40 @@ if "start_time_info" not in st.session_state:
     st.session_state.start_time_info = None
 
 
+# ---- CALLBACK: Go to next page ----
+
+def go_to_spel():
+    st.session_state.page = "spel"
+    st.session_state.feedback_given = False
+
+    # RESET STATE
+    st.session_state.game_over = False
+    st.session_state.game_over_time = None
+    st.session_state.start_time_info = None
+    st.session_state.error_tasks = 0
+
+    # ICONS
+    icons = [
+        {"icon": "🔔", "name": "Call bell"},
+        {"icon": "💊", "name": "Medication"},
+        {"icon": "🛏️", "name": "Patient bed"},
+        {"icon": "🩺", "name": "Stethoscope"},
+        {"icon": "💉", "name": "Injection"},
+        {"icon": "🧪", "name": "Lab test"},
+        {"icon": "📋", "name": "Patient chart"},
+        {"icon": "🧹", "name": "Clean room"},
+        {"icon": "🧴", "name": "Disinfect"},
+        {"icon": "🩹", "name": "Bandage"}
+    ]
+    random.shuffle(icons)
+    st.session_state.icons = icons
+
+    st.session_state.active_tasks = []
+    st.session_state.completed_tasks = []
+    st.session_state.task_count = 0
+    st.session_state.last_task_time = time.time()
+
+
 # ---- PAGINA 1 ----
 
 if st.session_state.page == "vraag":
@@ -50,7 +84,7 @@ if st.session_state.page == "vraag":
         "Please start by answering the next question:"
     )
 
-    col1, col2 = st.columns([3,1])
+    col1, col2 = st.columns([3, 1])
 
     with col1:
         waarde = st.number_input(
@@ -84,38 +118,8 @@ if st.session_state.page == "vraag":
             )
 
         if correct_of_dichtbij:
-
-            if st.button("Go to the next page"):
-
-                st.session_state.page = "spel"
-                st.session_state.feedback_given = False
-
-                # RESET STATE
-                st.session_state.game_over = False
-                st.session_state.game_over_time = None
-                st.session_state.start_time_info = None
-                st.session_state.error_tasks = 0
-
-                # ICONS
-                st.session_state.icons = [
-                    {"icon":"🔔","name":"Call bell"},
-                    {"icon":"💊","name":"Medication"},
-                    {"icon":"🛏️","name":"Patient bed"},
-                    {"icon":"🩺","name":"Stethoscope"},
-                    {"icon":"💉","name":"Injection"},
-                    {"icon":"🧪","name":"Lab test"},
-                    {"icon":"📋","name":"Patient chart"},
-                    {"icon":"🧹","name":"Clean room"},
-                    {"icon":"🧴","name":"Disinfect"},
-                    {"icon":"🩹","name":"Bandage"}
-                ]
-
-                random.shuffle(st.session_state.icons)
-
-                st.session_state.active_tasks = []
-                st.session_state.completed_tasks = []
-                st.session_state.task_count = 0
-                st.session_state.last_task_time = time.time()
+            # FIX: use on_click callback so the page switches in a single click
+            st.button("Go to the next page", on_click=go_to_spel)
 
 
 # ---- PAGINA 2 ----
@@ -255,7 +259,7 @@ elif st.session_state.page == "spel":
 
 elif st.session_state.page == "info":
 
-    st.title("What’s really going on?")
+    st.title("What's really going on?")
 
     st_autorefresh(interval=1000, key="info_refresh")
 
@@ -266,23 +270,23 @@ elif st.session_state.page == "info":
     step = elapsed // 3
 
     teksten = [
-    "30.2% of healthcare workers leave their job within the first year.",
-    "That means: nearly one in three new employees is gone… before they are fully trained.",
-    "And this is happening while the healthcare sector is already facing staff shortages.",
-    "We train people, we recruit them… yet we fail to retain them.",
-    "The core of the problem? Transition shock.",
-    "The gap between expectations… and reality.",
-    "New employees are immediately confronted with high workloads, intense emotions, and heavy responsibilities.",
-    "What should feel like a growth phase often feels like survival.",
-    "A lack of self-confidence plays a major role.",
-    "And without proper guidance, many feel left alone.",
-    "The result: people leave… and the pressure on those who remain increases.",
-    "A vicious cycle is created.",
-    "The problem is not inflow.",
-    "The problem is retention… in that first year.",
-    "If we truly want to make an impact, this is where we need to intervene.",
-    "And that is exactly what our solution focuses on."
-]
+        "30.2% of healthcare workers leave their job within the first year.",
+        "That means: nearly one in three new employees is gone… before they are fully trained.",
+        "And this is happening while the healthcare sector is already facing staff shortages.",
+        "We train people, we recruit them… yet we fail to retain them.",
+        "The core of the problem? Transition shock.",
+        "The gap between expectations… and reality.",
+        "New employees are immediately confronted with high workloads, intense emotions, and heavy responsibilities.",
+        "What should feel like a growth phase often feels like survival.",
+        "A lack of self-confidence plays a major role.",
+        "And without proper guidance, many feel left alone.",
+        "The result: people leave… and the pressure on those who remain increases.",
+        "A vicious cycle is created.",
+        "The problem is not inflow.",
+        "The problem is retention… in that first year.",
+        "If we truly want to make an impact, this is where we need to intervene.",
+        "And that is exactly what our solution focuses on."
+    ]
 
     for i in range(min(step + 1, len(teksten))):
         st.write(teksten[i])
