@@ -49,6 +49,9 @@ with st.sidebar:
             st.session_state.page = "info"
             st.session_state.start_time_info = None
             st.rerun()
+        if st.button("→ Sudoku", key="dev_sudoku"):
+            st.session_state.page = "sudoku"
+            st.rerun()
         if st.button("→ Game", key="dev_spel"):
             go_to_spel()
             st.rerun()
@@ -503,3 +506,273 @@ elif st.session_state.page == "care":
 
     <div class="footer">✦ Together, these four pillars make healthcare workers stay. ✦</div>
     """, height=340)
+    # ---- Try it out button ----
+    st.markdown("<br>", unsafe_allow_html=True)
+    st.button(
+        "🎯 Try it out!",
+        on_click=lambda: st.session_state.update({"page": "sudoku"}),
+        use_container_width=True
+    )
+
+
+# ======================================================
+# PAGINA 5: SUDOKU
+# ======================================================
+
+elif st.session_state.page == "sudoku":
+
+    st.markdown("""
+        <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+        <style>
+        [data-testid="stAppViewContainer"] {
+            background: linear-gradient(135deg, #FDF3E7 0%, #FAE8D0 40%, #F5DEC8 100%);
+        }
+        [data-testid="stHeader"] { background: transparent !important; }
+        .main .block-container { padding-top: 1.5rem !important; }
+        </style>
+    """, unsafe_allow_html=True)
+
+    components.html("""
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    <style>
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body {
+        background: linear-gradient(135deg, #FDF3E7 0%, #FAE8D0 40%, #F5DEC8 100%);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 20px 16px 30px;
+        font-family: 'Crimson Text', serif;
+        min-height: 100vh;
+      }
+
+      h1 {
+        font-family: 'Playfair Display', serif;
+        font-weight: 900;
+        font-size: 2.2rem;
+        color: #6B3A2A;
+        text-align: center;
+        margin-bottom: 6px;
+        text-shadow: 1px 2px 0 rgba(180,80,40,0.12);
+      }
+      .subtitle {
+        font-family: 'Crimson Text', serif;
+        font-style: italic;
+        font-size: 1.05rem;
+        color: #A0624A;
+        text-align: center;
+        margin-bottom: 22px;
+      }
+
+      /* ---- Sudoku grid ---- */
+      #sudoku {
+        display: grid;
+        grid-template-columns: repeat(9, 52px);
+        grid-template-rows: repeat(9, 52px);
+        border: 3px solid #8B3A20;
+        background: #8B3A20;
+        gap: 1px;
+        box-shadow: 0 8px 32px rgba(100,40,20,0.18);
+        border-radius: 6px;
+        overflow: hidden;
+      }
+
+      .cell {
+        width: 52px;
+        height: 52px;
+        background: #FDF6EC;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.4rem;
+        font-family: 'Playfair Display', serif;
+        font-weight: 700;
+        color: #6B3A2A;
+        cursor: default;
+        position: relative;
+      }
+
+      /* Thick borders for 3x3 boxes */
+      .cell[data-col="3"], .cell[data-col="6"] { border-left: 2px solid #8B3A20; }
+      .cell[data-row="3"], .cell[data-row="6"] { border-top: 2px solid #8B3A20; }
+
+      .cell.empty {
+        cursor: text;
+        color: #C4663A;
+      }
+      .cell.empty:focus-within { background: #FEE9C4; }
+      .cell.empty input {
+        width: 100%;
+        height: 100%;
+        border: none;
+        background: transparent;
+        text-align: center;
+        font-size: 1.4rem;
+        font-family: 'Playfair Display', serif;
+        font-weight: 700;
+        color: #C4663A;
+        outline: none;
+        cursor: text;
+      }
+      .cell.conflict { background: #FFE0D8; }
+      .cell.selected { background: #FEE9C4; }
+
+      /* ---- Floating task icons ---- */
+      .task-icon {
+        position: fixed;
+        font-size: 3rem;
+        cursor: pointer;
+        z-index: 999;
+        animation: pulse 0.8s ease-in-out infinite alternate;
+        filter: drop-shadow(0 0 8px rgba(196,102,58,0.7));
+        transition: transform 0.1s;
+        user-select: none;
+        border-radius: 50%;
+        padding: 4px;
+        background: rgba(255,255,255,0.85);
+        line-height: 1;
+      }
+      .task-icon:hover { transform: scale(1.15); }
+      .task-icon.warn {
+        filter: drop-shadow(0 0 10px rgba(220,140,0,0.9));
+        animation: pulse-warn 0.5s ease-in-out infinite alternate;
+      }
+      .task-icon.urgent {
+        filter: drop-shadow(0 0 12px rgba(200,30,30,0.95));
+        animation: pulse-urgent 0.25s ease-in-out infinite alternate;
+      }
+      .task-icon.clicked {
+        transform: scale(0);
+        opacity: 0;
+        transition: transform 0.25s, opacity 0.25s;
+      }
+      .sad-icon {
+        position: fixed;
+        font-size: 3rem;
+        z-index: 999;
+        animation: fadeout 2s forwards;
+        user-select: none;
+        line-height: 1;
+      }
+
+      @keyframes pulse {
+        from { transform: scale(1); }
+        to   { transform: scale(1.1); }
+      }
+      @keyframes pulse-warn {
+        from { transform: scale(1); }
+        to   { transform: scale(1.15); }
+      }
+      @keyframes pulse-urgent {
+        from { transform: scale(0.95); }
+        to   { transform: scale(1.2); }
+      }
+      @keyframes fadeout {
+        0%   { opacity: 1; transform: scale(1); }
+        60%  { opacity: 1; transform: scale(1.1); }
+        100% { opacity: 0; transform: scale(0.6); }
+      }
+    </style>
+
+    <h1>Solve this Sudoku</h1>
+    <p class="subtitle">Make sure to click on every task that appears as well!</p>
+
+    <div id="sudoku"></div>
+
+    <script>
+      // ---- Arto Inkala's "World's hardest sudoku" ----
+      const puzzle = [
+        [8,0,0, 0,0,0, 0,0,0],
+        [0,0,3, 6,0,0, 0,0,0],
+        [0,7,0, 0,9,0, 2,0,0],
+
+        [0,5,0, 0,0,7, 0,0,0],
+        [0,0,0, 0,4,5, 7,0,0],
+        [0,0,0, 1,0,0, 0,3,0],
+
+        [0,0,1, 0,0,0, 0,6,8],
+        [0,0,8, 5,0,0, 0,1,0],
+        [0,9,0, 0,0,0, 4,0,0]
+      ];
+
+      const grid = document.getElementById('sudoku');
+
+      for (let r = 0; r < 9; r++) {
+        for (let c = 0; c < 9; c++) {
+          const cell = document.createElement('div');
+          cell.className = 'cell';
+          cell.dataset.row = r;
+          cell.dataset.col = c;
+          const val = puzzle[r][c];
+          if (val !== 0) {
+            cell.textContent = val;
+          } else {
+            cell.classList.add('empty');
+            const inp = document.createElement('input');
+            inp.type = 'text';
+            inp.maxLength = 1;
+            inp.addEventListener('keydown', e => {
+              if (!'123456789Backspace'.includes(e.key)) e.preventDefault();
+            });
+            inp.addEventListener('input', e => {
+              const v = inp.value.replace(/[^1-9]/g, '');
+              inp.value = v ? v[v.length - 1] : '';
+            });
+            cell.appendChild(inp);
+          }
+          grid.appendChild(cell);
+        }
+      }
+
+      // ---- Floating task icons ----
+      const ICONS = ["🔔","💊","🛏️","🩺","💉","🧪","📋","🧹","🧴","🩹"];
+      const EXPIRE_MS = 5000;
+      const SAD_MS    = 2000;
+
+      function spawnTask() {
+        const icon = ICONS[Math.floor(Math.random() * ICONS.length)];
+        const el = document.createElement('div');
+        el.className = 'task-icon';
+        el.textContent = icon;
+
+        // Random position within viewport (with margin)
+        const margin = 70;
+        const x = margin + Math.random() * (window.innerWidth  - margin * 2);
+        const y = margin + Math.random() * (window.innerHeight - margin * 2);
+        el.style.left = x + 'px';
+        el.style.top  = y + 'px';
+        document.body.appendChild(el);
+
+        // Warning stages
+        const t1 = setTimeout(() => el.classList.add('warn'),   3000);
+        const t2 = setTimeout(() => el.classList.add('urgent'), 4200);
+
+        // Expire: turn into sad face
+        const tExpire = setTimeout(() => {
+          clearTimeout(t1); clearTimeout(t2);
+          const sad = document.createElement('div');
+          sad.className = 'sad-icon';
+          sad.textContent = '😢';
+          sad.style.left = el.style.left;
+          sad.style.top  = el.style.top;
+          document.body.appendChild(sad);
+          el.remove();
+          setTimeout(() => sad.remove(), SAD_MS);
+        }, EXPIRE_MS);
+
+        // Click: dismiss
+        el.addEventListener('click', () => {
+          clearTimeout(t1); clearTimeout(t2); clearTimeout(tExpire);
+          el.classList.add('clicked');
+          setTimeout(() => el.remove(), 300);
+        });
+
+        // Schedule next spawn: 4–7 seconds from now
+        const next = (4 + Math.random() * 3) * 1000;
+        setTimeout(spawnTask, next);
+      }
+
+      // First icon after 3 seconds
+      setTimeout(spawnTask, 3000);
+    </script>
+    """, height=600, scrolling=False)
