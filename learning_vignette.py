@@ -169,6 +169,19 @@ elif st.session_state.page == "spel":
     st.divider()
 
     # ---- ICON GRID ----
+    st.markdown(
+        """
+        <style>
+        div[data-testid="stButton"] button {
+            font-size: 2.5rem !important;
+            line-height: 1.2 !important;
+            padding: 0.4rem 0 !important;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+
     cols = st.columns(5)
 
     for i, item in enumerate(st.session_state.icons):
