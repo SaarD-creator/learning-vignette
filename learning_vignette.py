@@ -539,31 +539,19 @@ elif st.session_state.page == "sudoku":
       * { box-sizing: border-box; margin: 0; padding: 0; }
       body {
         background: linear-gradient(135deg, #FDF3E7 0%, #FAE8D0 40%, #F5DEC8 100%);
-        display: flex;
-        flex-direction: column;
-        align-items: center;
+        display: flex; flex-direction: column; align-items: center;
         padding: 18px 16px 30px;
         font-family: 'Crimson Text', serif;
-        min-height: 100vh;
-        overflow: hidden;
+        min-height: 100vh; overflow: hidden;
       }
-
       h1 {
-        font-family: 'Playfair Display', serif;
-        font-weight: 900;
-        font-size: 2rem;
-        color: #6B3A2A;
-        text-align: center;
-        margin-bottom: 4px;
-        text-shadow: 1px 2px 0 rgba(180,80,40,0.12);
+        font-family: 'Playfair Display', serif; font-weight: 900;
+        font-size: 2rem; color: #6B3A2A; text-align: center;
+        margin-bottom: 4px; text-shadow: 1px 2px 0 rgba(180,80,40,0.12);
       }
       .subtitle {
-        font-family: 'Crimson Text', serif;
-        font-style: italic;
-        font-size: 1rem;
-        color: #A0624A;
-        text-align: center;
-        margin-bottom: 18px;
+        font-family: 'Crimson Text', serif; font-style: italic;
+        font-size: 1rem; color: #A0624A; text-align: center; margin-bottom: 18px;
       }
 
       /* ---- Sudoku grid ---- */
@@ -571,158 +559,94 @@ elif st.session_state.page == "sudoku":
         display: grid;
         grid-template-columns: repeat(9, 50px);
         grid-template-rows: repeat(9, 50px);
-        border: 3px solid #8B3A20;
-        background: #C4866A;
-        gap: 1px;
-        box-shadow: 0 8px 32px rgba(100,40,20,0.18);
-        border-radius: 6px;
-        overflow: hidden;
+        border: 3px solid #8B3A20; background: #C4866A;
+        gap: 1px; box-shadow: 0 8px 32px rgba(100,40,20,0.18);
+        border-radius: 6px; overflow: hidden;
       }
-
       .cell {
-        width: 50px; height: 50px;
-        background: #FDF6EC;
+        width: 50px; height: 50px; background: #FDF6EC;
         display: flex; align-items: center; justify-content: center;
-        font-size: 1.35rem;
-        font-family: 'Playfair Display', serif;
-        font-weight: 700;
-        color: #4A2510;
-        position: relative;
-        transition: background 0.3s;
+        font-size: 1.35rem; font-family: 'Playfair Display', serif;
+        font-weight: 700; color: #4A2510; position: relative; transition: background 0.3s;
       }
-      /* thick box borders */
       .cell[data-col="3"], .cell[data-col="6"] { border-left: 2.5px solid #8B3A20; }
       .cell[data-row="3"], .cell[data-row="6"] { border-top: 2.5px solid #8B3A20; }
-
-      .cell.empty { cursor: text; }
       .cell.empty input {
-        width: 100%; height: 100%;
-        border: none; background: transparent;
-        text-align: center;
-        font-size: 1.35rem;
-        font-family: 'Playfair Display', serif;
-        font-weight: 700;
-        color: #C4663A;
-        outline: none;
-        cursor: text;
+        width: 100%; height: 100%; border: none; background: transparent;
+        text-align: center; font-size: 1.35rem; font-family: 'Playfair Display', serif;
+        font-weight: 700; color: #C4663A; outline: none; cursor: text;
       }
-      /* feedback states */
       .cell.correct { background: #C8F0D0; animation: flashGreen 0.5s ease; }
       .cell.wrong   { background: #FFD0CC; }
-      @keyframes flashGreen {
-        0%   { background: #7BE89A; }
-        100% { background: #C8F0D0; }
-      }
+      @keyframes flashGreen { 0%{background:#7BE89A} 100%{background:#C8F0D0} }
 
       /* ---- Floating task icons ---- */
       .task-icon {
-        position: fixed;
-        font-size: 2.8rem;
-        cursor: pointer;
-        z-index: 500;
+        position: fixed; font-size: 2.8rem; cursor: pointer; z-index: 500;
         animation: pulse 0.8s ease-in-out infinite alternate;
         filter: drop-shadow(0 0 8px rgba(196,102,58,0.7));
-        user-select: none;
-        background: rgba(255,255,255,0.88);
-        border-radius: 50%;
-        padding: 4px;
-        line-height: 1;
-        transition: transform 0.15s;
+        user-select: none; background: rgba(255,255,255,0.88);
+        border-radius: 50%; padding: 4px; line-height: 1; transition: transform 0.15s;
       }
       .task-icon:hover { transform: scale(1.15); }
-      .task-icon.warn    { filter: drop-shadow(0 0 10px rgba(220,140,0,0.9)); animation: pulse-warn 0.5s ease-in-out infinite alternate; }
-      .task-icon.urgent  { filter: drop-shadow(0 0 13px rgba(200,30,30,0.95)); animation: pulse-urgent 0.22s ease-in-out infinite alternate; }
+      .task-icon.warn   { filter: drop-shadow(0 0 10px rgba(220,140,0,0.9));   animation: pulse-warn 0.5s ease-in-out infinite alternate; }
+      .task-icon.urgent { filter: drop-shadow(0 0 13px rgba(200,30,30,0.95));  animation: pulse-urgent 0.22s ease-in-out infinite alternate; }
       .task-icon.clicked { transform: scale(0); opacity: 0; transition: transform 0.22s, opacity 0.22s; }
+      .sad-icon { position: fixed; font-size: 2.8rem; z-index: 500; animation: fadeout 2s forwards; user-select: none; line-height: 1; }
 
-      .sad-icon {
-        position: fixed; font-size: 2.8rem; z-index: 500;
-        animation: fadeout 2s forwards; user-select: none; line-height: 1;
-      }
-
-      @keyframes pulse        { from{transform:scale(1)}   to{transform:scale(1.1)} }
-      @keyframes pulse-warn   { from{transform:scale(1)}   to{transform:scale(1.15)} }
-      @keyframes pulse-urgent { from{transform:scale(0.95)} to{transform:scale(1.2)} }
+      @keyframes pulse        { from{transform:scale(1)}    to{transform:scale(1.1)}  }
+      @keyframes pulse-warn   { from{transform:scale(1)}    to{transform:scale(1.15)} }
+      @keyframes pulse-urgent { from{transform:scale(0.95)} to{transform:scale(1.2)}  }
       @keyframes fadeout      { 0%{opacity:1;transform:scale(1)} 60%{opacity:1;transform:scale(1.1)} 100%{opacity:0;transform:scale(0.6)} }
 
       /* ---- CARE cloud ---- */
       .care-cloud {
-        position: fixed;
-        cursor: pointer;
-        z-index: 501;
-        user-select: none;
+        position: fixed; cursor: pointer; z-index: 501; user-select: none;
         animation: float 2s ease-in-out infinite alternate;
         filter: drop-shadow(0 4px 16px rgba(196,102,58,0.35));
       }
-      .care-cloud svg { display: block; }
       .care-cloud .cloud-label {
-        position: absolute; inset: 0;
-        display: flex; align-items: center; justify-content: center;
-        font-family: 'Playfair Display', serif;
-        font-weight: 900;
-        font-size: 1.5rem;
-        color: #6B3A2A;
-        letter-spacing: 0.08em;
+        position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+        font-family: 'Playfair Display', serif; font-weight: 900;
+        font-size: 1.5rem; color: #6B3A2A; letter-spacing: 0.08em;
       }
       @keyframes float { from{transform:translateY(0)} to{transform:translateY(-8px)} }
 
       /* ---- Pause overlay ---- */
       #pause-overlay {
-        display: none;
-        position: fixed; inset: 0; z-index: 9999;
-        background: rgba(253,243,231,0.96);
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        padding: 2rem;
-        text-align: center;
+        display: none; position: fixed; inset: 0; z-index: 9999;
+        background: rgba(253,243,231,0.97);
+        flex-direction: column; align-items: center; justify-content: center;
+        padding: 2rem; text-align: center;
       }
       #pause-overlay.visible { display: flex; }
 
-      .pause-icon {
-        font-size: 3.5rem;
-        margin-bottom: 1rem;
-        animation: pulse 1.2s ease-in-out infinite alternate;
-      }
+      .overlay-section { display: none; flex-direction: column; align-items: center; }
+      .overlay-section.active { display: flex; }
 
       .resilience-title {
-        font-family: 'Playfair Display', serif;
-        font-weight: 900;
-        font-size: 1.9rem;
-        color: #6B3A2A;
-        margin-bottom: 1.2rem;
-        opacity: 0;
-        animation: fadeIn 0.6s 0.2s forwards;
+        font-family: 'Playfair Display', serif; font-weight: 900;
+        font-size: 1.9rem; color: #6B3A2A; margin-bottom: 1.2rem;
+        opacity: 0; animation: fadeIn 0.6s 0.2s forwards;
       }
-
       .message {
-        font-family: 'Crimson Text', serif;
-        font-size: 1.15rem;
-        color: #8B4A30;
-        line-height: 1.65;
-        max-width: 520px;
-        margin-bottom: 0.8rem;
-        opacity: 0;
+        font-family: 'Crimson Text', serif; font-size: 1.15rem;
+        color: #8B4A30; line-height: 1.65; max-width: 520px;
+        margin-bottom: 0.8rem; opacity: 0;
       }
       .message.italic { font-style: italic; font-size: 1.25rem; color: #C4663A; }
       .message.show { animation: fadeIn 0.7s forwards; }
 
-      #resume-btn {
-        margin-top: 1.4rem;
-        padding: 0.7rem 2.2rem;
-        font-family: 'Playfair Display', serif;
-        font-weight: 700;
-        font-size: 1rem;
+      .resume-btn {
+        margin-top: 1.4rem; padding: 0.7rem 2.2rem;
+        font-family: 'Playfair Display', serif; font-weight: 700; font-size: 1rem;
         background: linear-gradient(135deg, #C4663A, #E07B50);
-        color: white;
-        border: none;
-        border-radius: 40px;
-        cursor: pointer;
+        color: white; border: none; border-radius: 40px; cursor: pointer;
         box-shadow: 0 4px 16px rgba(196,102,58,0.35);
-        opacity: 0;
-        transition: transform 0.15s, box-shadow 0.15s;
+        opacity: 0; transition: transform 0.15s, box-shadow 0.15s;
       }
-      #resume-btn:hover { transform: scale(1.04); box-shadow: 0 6px 20px rgba(196,102,58,0.45); }
-      #resume-btn.show { animation: fadeIn 0.7s forwards; }
+      .resume-btn:hover { transform: scale(1.04); box-shadow: 0 6px 20px rgba(196,102,58,0.45); }
+      .resume-btn.show { animation: fadeIn 0.7s forwards; }
 
       @keyframes fadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
     </style>
@@ -731,18 +655,33 @@ elif st.session_state.page == "sudoku":
     <p class="subtitle">Make sure to click on every task that appears as well!</p>
     <div id="sudoku"></div>
 
-    <!-- Pause overlay -->
+    <!-- Pause overlay with two states -->
     <div id="pause-overlay">
-      <div class="pause-icon">⏸️</div>
-      <div class="resilience-title">R — Resilience Training</div>
-      <div class="message italic" id="m1">Take a deep breath. 🌿</div>
-      <div class="message" id="m2">Every puzzle has a solution — just like every challenge in healthcare.</div>
-      <div class="message italic" id="m3">You are capable of more than you think. 💛</div>
-      <div class="message" id="m4">Stress narrows your focus. A moment of stillness opens it back up.</div>
-      <div class="message italic" id="m5">Resilience isn't about going faster — it's about going smarter.</div>
-      <div class="message" id="m6">Just like in nursing: structured pauses and self-compassion make you stronger, not weaker.</div>
-      <div class="message italic" id="m7">You don't need to solve everything at once. 🌱</div>
-      <button id="resume-btn">▶ Continue</button>
+
+      <!-- STATE R: Resilience -->
+      <div class="overlay-section" id="section-R">
+        <div class="resilience-title">R — Resilience Training</div>
+        <div class="message italic" id="r1">Take a deep breath. 🌿</div>
+        <div class="message"        id="r2">Every puzzle has a solution — just like every challenge in healthcare.</div>
+        <div class="message italic" id="r3">You are capable of more than you think. 💛</div>
+        <div class="message"        id="r4">Stress narrows your focus. A moment of stillness opens it back up.</div>
+        <div class="message italic" id="r5">Resilience isn't about going faster — it's about going smarter.</div>
+        <div class="message"        id="r6">Just like in nursing: structured pauses and self-compassion make you stronger, not weaker.</div>
+        <div class="message italic" id="r7">You don't need to solve everything at once. 🌱</div>
+        <button class="resume-btn" id="resume-R">▶ Continue</button>
+      </div>
+
+      <!-- STATE A: Adaptation Support -->
+      <div class="overlay-section" id="section-A">
+        <div class="resilience-title">A — Adaptation Support</div>
+        <div class="message"        id="a1">In real onboarding, new healthcare workers aren't thrown in at the deep end.</div>
+        <div class="message italic" id="a2">They build up responsibility step by step — just like you've been doing here.</div>
+        <div class="message"        id="a3">From now on, the task notifications will no longer appear.</div>
+        <div class="message italic" id="a4">This is what phased onboarding feels like: one less pressure at a time. 🌤️</div>
+        <div class="message"        id="a5">A supported start makes all the difference between staying and leaving.</div>
+        <button class="resume-btn" id="resume-A">▶ Continue</button>
+      </div>
+
     </div>
 
     <script>
@@ -753,11 +692,9 @@ elif st.session_state.page == "sudoku":
         [5,3,0, 0,7,0, 0,0,0],
         [6,0,0, 1,9,5, 0,0,0],
         [0,9,8, 0,0,0, 0,6,0],
-
         [8,0,0, 0,6,0, 0,0,3],
         [4,0,0, 8,0,3, 0,0,1],
         [7,0,0, 0,2,0, 0,0,6],
-
         [0,6,0, 0,0,0, 2,8,0],
         [0,0,0, 4,1,9, 0,0,5],
         [0,0,0, 0,8,0, 0,7,9]
@@ -766,11 +703,9 @@ elif st.session_state.page == "sudoku":
         [5,3,4, 6,7,8, 9,1,2],
         [6,7,2, 1,9,5, 3,4,8],
         [1,9,8, 3,4,2, 5,6,7],
-
         [8,5,9, 7,6,1, 4,2,3],
         [4,2,6, 8,5,3, 7,9,1],
         [7,1,3, 9,2,4, 8,5,6],
-
         [9,6,1, 5,3,7, 2,8,4],
         [2,8,7, 4,1,9, 6,3,5],
         [3,4,5, 2,8,6, 1,7,9]
@@ -780,9 +715,7 @@ elif st.session_state.page == "sudoku":
       for (let r = 0; r < 9; r++) {
         for (let c = 0; c < 9; c++) {
           const cell = document.createElement('div');
-          cell.className = 'cell';
-          cell.dataset.row = r;
-          cell.dataset.col = c;
+          cell.className = 'cell'; cell.dataset.row = r; cell.dataset.col = c;
           const val = puzzle[r][c];
           if (val !== 0) {
             cell.textContent = val;
@@ -798,7 +731,7 @@ elif st.session_state.page == "sudoku":
               inp.value = v ? v[v.length-1] : '';
               if (!inp.value) { cell.classList.remove('correct','wrong'); return; }
               const correct = parseInt(inp.value) === solution[r][c];
-              cell.classList.toggle('correct', correct);
+              cell.classList.toggle('correct',  correct);
               cell.classList.toggle('wrong',   !correct);
             });
             cell.appendChild(inp);
@@ -810,60 +743,75 @@ elif st.session_state.page == "sudoku":
       // =============================================
       // FLOATING ICONS + CARE CLOUD
       // =============================================
-      const ICONS = ["🔔","💊","🛏️","🩺","💉","🧪","📋","🧹","🧴","🩹"];
+      const ICONS     = ["🔔","💊","🛏️","🩺","💉","🧪","📋","🧹","🧴","🩹"];
       const EXPIRE_MS = 5000;
       const SAD_MS    = 2000;
 
-      let paused        = false;
-      let careShown     = false;
-      let nextSpawnId   = null;
-      const gameStart   = Date.now();
+      let paused          = false;
+      let careCount       = 0;       // 0=none shown, 1=R shown, 2=A shown
+      let iconsDisabled   = false;   // true after A continue
+      let nextSpawnId     = null;
+      let careCloudShown  = false;   // currently waiting for first CARE cloud
+      const gameStart     = Date.now();
+      let resumeTime      = null;    // when last continue was pressed
 
-      // Track active icons for pause/resume
-      const activeIcons = new Map(); // el → {t1,t2,tExp,remaining,startedAt}
+      const activeIcons = new Map();
 
-      function scheduleNext() {
-        const delay = (4 + Math.random() * 3) * 1000;
+      function scheduleNext(delayOverride) {
+        const delay = delayOverride !== undefined
+          ? delayOverride
+          : (4 + Math.random() * 3) * 1000;
         nextSpawnId = setTimeout(doSpawn, delay);
       }
 
       function doSpawn() {
-        if (paused) return;
-        if (!careShown && Date.now() - gameStart >= 20000) {
-          careShown = true;
+        if (paused || iconsDisabled) return;
+
+        const now = Date.now();
+        const sinceStart  = now - gameStart;
+        const sinceResume = resumeTime ? now - resumeTime : Infinity;
+
+        // Show CARE cloud if:
+        //  - careCount===0 and 20s since game start
+        //  - careCount===1 and 15s since last continue
+        const shouldShowCare =
+          (careCount === 0 && sinceStart   >= 20000) ||
+          (careCount === 1 && sinceResume  >= 15000);
+
+        if (shouldShowCare) {
           spawnCareCloud();
         } else {
           spawnIcon();
+          scheduleNext();
         }
-        scheduleNext();
       }
 
       function randomPos() {
-        const margin = 65;
+        const m = 65;
         return {
-          x: margin + Math.random() * (window.innerWidth  - margin*2),
-          y: margin + Math.random() * (window.innerHeight - margin*2)
+          x: m + Math.random() * (window.innerWidth  - m*2),
+          y: m + Math.random() * (window.innerHeight - m*2)
         };
       }
 
       function spawnIcon() {
+        if (iconsDisabled) return;
         const icon = ICONS[Math.floor(Math.random() * ICONS.length)];
         const el = document.createElement('div');
-        el.className = 'task-icon';
-        el.textContent = icon;
-        const {x, y} = randomPos();
-        el.style.left = x + 'px'; el.style.top = y + 'px';
+        el.className = 'task-icon'; el.textContent = icon;
+        const {x,y} = randomPos();
+        el.style.left = x+'px'; el.style.top = y+'px';
         document.body.appendChild(el);
 
-        const t1    = setTimeout(() => el.classList.add('warn'),   3000);
-        const t2    = setTimeout(() => el.classList.add('urgent'), 4200);
-        const tExp  = setTimeout(() => expireIcon(el),             EXPIRE_MS);
+        const t1   = setTimeout(() => el.classList.add('warn'),   3000);
+        const t2   = setTimeout(() => el.classList.add('urgent'), 4200);
+        const tExp = setTimeout(() => expireIcon(el), EXPIRE_MS);
         activeIcons.set(el, {t1, t2, tExp, startedAt: Date.now(), duration: EXPIRE_MS});
 
         el.addEventListener('click', () => {
           if (paused) return;
-          const entry = activeIcons.get(el);
-          if (entry) { clearTimeout(entry.t1); clearTimeout(entry.t2); clearTimeout(entry.tExp); }
+          const e = activeIcons.get(el);
+          if (e) { clearTimeout(e.t1); clearTimeout(e.t2); clearTimeout(e.tExp); }
           activeIcons.delete(el);
           el.classList.add('clicked');
           setTimeout(() => el.remove(), 300);
@@ -873,8 +821,7 @@ elif st.session_state.page == "sudoku":
       function expireIcon(el) {
         activeIcons.delete(el);
         const sad = document.createElement('div');
-        sad.className = 'sad-icon';
-        sad.textContent = '😢';
+        sad.className = 'sad-icon'; sad.textContent = '😢';
         sad.style.left = el.style.left; sad.style.top = el.style.top;
         document.body.appendChild(sad);
         el.remove();
@@ -882,10 +829,10 @@ elif st.session_state.page == "sudoku":
       }
 
       function spawnCareCloud() {
-        const {x, y} = randomPos();
+        const {x,y} = randomPos();
         const wrapper = document.createElement('div');
         wrapper.className = 'care-cloud';
-        wrapper.style.left = x + 'px'; wrapper.style.top = y + 'px';
+        wrapper.style.left = x+'px'; wrapper.style.top = y+'px';
         wrapper.innerHTML = `
           <svg width="120" height="80" viewBox="0 0 120 80" xmlns="http://www.w3.org/2000/svg">
             <path d="M100,55 Q115,55 115,42 Q115,30 103,30 Q101,18 90,18 Q84,10 74,12 Q66,4 54,8 Q42,4 36,14 Q24,14 22,26 Q12,28 12,40 Q12,55 28,55 Z"
@@ -893,11 +840,7 @@ elif st.session_state.page == "sudoku":
           </svg>
           <div class="cloud-label">CARE</div>`;
         document.body.appendChild(wrapper);
-
-        wrapper.addEventListener('click', () => {
-          wrapper.remove();
-          pauseGame();
-        });
+        wrapper.addEventListener('click', () => { wrapper.remove(); pauseGame(); });
       }
 
       // =============================================
@@ -907,46 +850,71 @@ elif st.session_state.page == "sudoku":
         paused = true;
         clearTimeout(nextSpawnId);
 
-        // Freeze all active icons
         activeIcons.forEach((entry, el) => {
           clearTimeout(entry.t1); clearTimeout(entry.t2); clearTimeout(entry.tExp);
           entry.remaining = entry.duration - (Date.now() - entry.startedAt);
           el.style.animationPlayState = 'paused';
         });
 
-        // Show overlay and reveal messages
-        const overlay = document.getElementById('pause-overlay');
-        overlay.classList.add('visible');
+        // Choose which overlay section to show
+        careCount++;
+        const sectionId = careCount === 1 ? 'section-R' : 'section-A';
+        document.querySelectorAll('.overlay-section').forEach(s => s.classList.remove('active'));
+        document.getElementById(sectionId).classList.add('active');
 
-        const delays = [0.3, 1.0, 1.8, 2.6, 3.4, 4.2, 5.0, 5.9];
-        ['m1','m2','m3','m4','m5','m6','m7'].forEach((id, i) => {
-          setTimeout(() => {
-            const el = document.getElementById(id);
-            if (el) el.classList.add('show');
-          }, delays[i] * 1000);
+        // Reset message opacities
+        document.querySelectorAll('.message, .resume-btn').forEach(el => {
+          el.classList.remove('show'); el.style.opacity = '0';
         });
+
+        document.getElementById('pause-overlay').classList.add('visible');
+
+        // Staggered message reveal
+        const prefix = careCount === 1 ? 'r' : 'a';
+        const count  = careCount === 1 ? 7 : 5;
+        for (let i = 1; i <= count; i++) {
+          const el = document.getElementById(prefix + i);
+          if (el) setTimeout(() => el.classList.add('show'), i * 900);
+        }
+        const btnId = careCount === 1 ? 'resume-R' : 'resume-A';
         setTimeout(() => {
-          document.getElementById('resume-btn').classList.add('show');
-        }, delays[7] * 1000);
+          document.getElementById(btnId).classList.add('show');
+        }, (count + 1) * 900);
       }
 
-      document.getElementById('resume-btn').addEventListener('click', resumeGame);
-
-      function resumeGame() {
-        paused = false;
+      document.getElementById('resume-R').addEventListener('click', () => {
         document.getElementById('pause-overlay').classList.remove('visible');
+        paused = false;
+        resumeTime = Date.now();
 
-        // Unfreeze icons (restart with remaining time)
+        // Unfreeze existing icons
         activeIcons.forEach((entry, el) => {
           el.style.animationPlayState = '';
           const remaining = Math.max(entry.remaining || 1000, 500);
           entry.tExp = setTimeout(() => expireIcon(el), remaining);
         });
 
-        scheduleNext();
-      }
+        // Next spawn: could be an icon OR the A cloud after 15s
+        // Poll frequently so we catch the 15s window
+        scheduleNext(2000);
+      });
 
-      // First spawn after 3 seconds
+      document.getElementById('resume-A').addEventListener('click', () => {
+        document.getElementById('pause-overlay').classList.remove('visible');
+        paused = false;
+        iconsDisabled = true;   // no more icons ever
+
+        // Remove any lingering icons
+        activeIcons.forEach((entry, el) => {
+          clearTimeout(entry.t1); clearTimeout(entry.t2); clearTimeout(entry.tExp);
+          el.remove();
+        });
+        activeIcons.clear();
+        clearTimeout(nextSpawnId);
+      });
+
+      // First spawn: check every 2s until 20s have passed, then show cloud
+      // Start by spawning icons on normal schedule
       setTimeout(doSpawn, 3000);
     </script>
     """, height=640, scrolling=False)
