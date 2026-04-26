@@ -158,51 +158,17 @@ elif st.session_state.page == "spel":
         stress_level = 1
         st.session_state.game_over = True
 
-    # ---- STICKY STRESS BAR ----
-    bar_color = f"hsl({int((1 - stress_level) * 120)}, 80%, 45%)"  # green → red
-    st.markdown(
-        f"""
-        <style>
-        .sticky-stress {{
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            z-index: 9000;
-            background: white;
-            padding: 10px 2rem 8px 2rem;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-        }}
-        .sticky-stress .label {{
-            font-weight: 600;
-            font-size: 1rem;
-            margin-bottom: 4px;
-        }}
-        .stress-track {{
-            background: #e0e0e0;
-            border-radius: 999px;
-            height: 18px;
-            width: 100%;
-        }}
-        .stress-fill {{
-            background: {bar_color};
-            height: 18px;
-            border-radius: 999px;
-            width: {int(stress_level * 100)}%;
-            transition: width 0.4s ease, background 0.4s ease;
-        }}
-        /* push page content down so it doesn't hide under the bar */
-        .main .block-container {{
-            padding-top: 80px !important;
-        }}
-        </style>
-        <div class="sticky-stress">
-            <div class="label">🧠 Stress level — {int(stress_level * 100)}%</div>
-            <div class="stress-track"><div class="stress-fill"></div></div>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
+    # ---- STRESS BAR IN SIDEBAR (always visible) ----
+    with st.sidebar:
+        st.subheader("🧠 Stress level")
+        st.progress(stress_level)
+        stress_pct = int(stress_level * 100)
+        if stress_pct < 40:
+            st.success(f"{stress_pct}% — Under control")
+        elif stress_pct < 70:
+            st.warning(f"{stress_pct}% — Getting busy!")
+        else:
+            st.error(f"{stress_pct}% — Critical!")
 
     # ---- TAKEN ----
     st.subheader("Current tasks")
