@@ -516,6 +516,7 @@ elif st.session_state.page == "care":
 
 
 
+
 # ======================================================
 # PAGINA 5: SUDOKU
 # ======================================================
@@ -554,6 +555,12 @@ elif st.session_state.page == "sudoku":
         font-size: 1rem; color: #A0624A; text-align: center; margin-bottom: 18px;
       }
 
+      /* ---- Game row: sudoku + help panel side by side ---- */
+      #game-row {
+        display: flex; flex-direction: row; align-items: flex-start;
+        gap: 24px; justify-content: center;
+      }
+
       /* ---- Sudoku grid ---- */
       #sudoku {
         display: grid;
@@ -561,24 +568,77 @@ elif st.session_state.page == "sudoku":
         grid-template-rows: repeat(9, 50px);
         border: 3px solid #8B3A20; background: #C4866A;
         gap: 1px; box-shadow: 0 8px 32px rgba(100,40,20,0.18);
-        border-radius: 6px; overflow: hidden;
+        border-radius: 6px; overflow: hidden; flex-shrink: 0;
       }
       .cell {
         width: 50px; height: 50px; background: #FDF6EC;
         display: flex; align-items: center; justify-content: center;
         font-size: 1.35rem; font-family: 'Playfair Display', serif;
-        font-weight: 700; color: #4A2510; position: relative; transition: background 0.3s;
+        font-weight: 700; color: #4A2510; transition: background 0.3s;
       }
       .cell[data-col="3"], .cell[data-col="6"] { border-left: 2.5px solid #8B3A20; }
       .cell[data-row="3"], .cell[data-row="6"] { border-top: 2.5px solid #8B3A20; }
       .cell.empty input {
         width: 100%; height: 100%; border: none; background: transparent;
-        text-align: center; font-size: 1.35rem; font-family: 'Playfair Display', serif;
-        font-weight: 700; color: #C4663A; outline: none; cursor: text;
+        text-align: center; font-size: 1.35rem;
+        font-family: 'Playfair Display', serif; font-weight: 700;
+        color: #C4663A; outline: none; cursor: text;
       }
-      .cell.correct { background: #C8F0D0; animation: flashGreen 0.5s ease; }
-      .cell.wrong   { background: #FFD0CC; }
+      .cell.correct  { background: #C8F0D0; animation: flashGreen 0.5s ease; }
+      .cell.wrong    { background: #FFD0CC; }
+      .cell.hinted   { background: #D4EDFF; }
+      .cell.hinted input { color: #2A6A9E; }
       @keyframes flashGreen { 0%{background:#7BE89A} 100%{background:#C8F0D0} }
+
+      /* ---- Help panel ---- */
+      #help-panel {
+        display: none;
+        flex-direction: column; align-items: center;
+        background: linear-gradient(160deg, #FDF0E4, #FAE4CC);
+        border: 2px solid #E0A070; border-radius: 18px;
+        padding: 1.4rem 1.2rem; width: 170px;
+        box-shadow: 0 6px 24px rgba(180,80,40,0.13);
+        animation: slideIn 0.5s ease;
+      }
+      #help-panel.visible { display: flex; }
+      @keyframes slideIn { from{opacity:0;transform:translateX(20px)} to{opacity:1;transform:translateX(0)} }
+
+      .help-title {
+        font-family: 'Playfair Display', serif; font-weight: 900;
+        font-size: 1.1rem; color: #6B3A2A; margin-bottom: 0.6rem; text-align: center;
+      }
+      .help-sub {
+        font-family: 'Crimson Text', serif; font-style: italic;
+        font-size: 0.88rem; color: #A06040; text-align: center; margin-bottom: 1rem;
+        line-height: 1.4;
+      }
+      #hint-btn {
+        padding: 0.55rem 1.1rem;
+        font-family: 'Playfair Display', serif; font-weight: 700; font-size: 0.95rem;
+        background: linear-gradient(135deg, #C4663A, #E07B50);
+        color: white; border: none; border-radius: 30px; cursor: pointer;
+        box-shadow: 0 3px 12px rgba(196,102,58,0.35);
+        transition: transform 0.15s, box-shadow 0.15s; margin-bottom: 1.2rem;
+      }
+      #hint-btn:hover { transform: scale(1.05); box-shadow: 0 5px 16px rgba(196,102,58,0.45); }
+      #hint-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+      /* ---- Countdown timer ---- */
+      #timer {
+        font-family: 'Playfair Display', serif; font-weight: 900;
+        font-size: 2.4rem; color: #6B3A2A; line-height: 1;
+      }
+      #timer.warn   { color: #C47A2A; }
+      #timer.urgent { color: #C43A2A; animation: pulse 0.4s ease-in-out infinite alternate; }
+      #timer-label {
+        font-family: 'Crimson Text', serif; font-style: italic;
+        font-size: 0.8rem; color: #A06040; margin-top: 4px; text-align: center;
+      }
+      #timer-done {
+        font-family: 'Crimson Text', serif; font-style: italic;
+        font-size: 0.9rem; color: #6B3A2A; text-align: center;
+        margin-top: 6px; display: none;
+      }
 
       /* ---- Floating task icons ---- */
       .task-icon {
@@ -620,47 +680,55 @@ elif st.session_state.page == "sudoku":
         padding: 2rem; text-align: center;
       }
       #pause-overlay.visible { display: flex; }
-
       .overlay-section { display: none; flex-direction: column; align-items: center; }
       .overlay-section.active { display: flex; }
-
-      .resilience-title {
+      .overlay-title {
         font-family: 'Playfair Display', serif; font-weight: 900;
         font-size: 1.9rem; color: #6B3A2A; margin-bottom: 1.2rem;
         opacity: 0; animation: fadeIn 0.6s 0.2s forwards;
       }
       .message {
         font-family: 'Crimson Text', serif; font-size: 1.15rem;
-        color: #8B4A30; line-height: 1.65; max-width: 520px;
+        color: #8B4A30; line-height: 1.65; max-width: 540px;
         margin-bottom: 0.8rem; opacity: 0;
       }
-      .message.italic { font-style: italic; font-size: 1.25rem; color: #C4663A; }
+      .message.italic { font-style: italic; font-size: 1.22rem; color: #C4663A; }
       .message.show { animation: fadeIn 0.7s forwards; }
-
       .resume-btn {
         margin-top: 1.4rem; padding: 0.7rem 2.2rem;
         font-family: 'Playfair Display', serif; font-weight: 700; font-size: 1rem;
         background: linear-gradient(135deg, #C4663A, #E07B50);
         color: white; border: none; border-radius: 40px; cursor: pointer;
-        box-shadow: 0 4px 16px rgba(196,102,58,0.35);
-        opacity: 0; transition: transform 0.15s, box-shadow 0.15s;
+        box-shadow: 0 4px 16px rgba(196,102,58,0.35); opacity: 0;
+        transition: transform 0.15s, box-shadow 0.15s;
       }
       .resume-btn:hover { transform: scale(1.04); box-shadow: 0 6px 20px rgba(196,102,58,0.45); }
       .resume-btn.show { animation: fadeIn 0.7s forwards; }
-
       @keyframes fadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
     </style>
 
     <h1>Solve this Sudoku</h1>
     <p class="subtitle">Make sure to click on every task that appears as well!</p>
-    <div id="sudoku"></div>
 
-    <!-- Pause overlay with two states -->
+    <div id="game-row">
+      <div id="sudoku"></div>
+
+      <div id="help-panel">
+        <div class="help-title">💡 Coaching</div>
+        <div class="help-sub">Stuck? A good coach gives you a nudge in the right direction.</div>
+        <button id="hint-btn">Get a hint</button>
+        <div id="timer">1:00</div>
+        <div id="timer-label">remaining</div>
+        <div id="timer-done">Take your time. 🌿</div>
+      </div>
+    </div>
+
+    <!-- Pause overlay -->
     <div id="pause-overlay">
 
-      <!-- STATE R: Resilience -->
+      <!-- R: Resilience -->
       <div class="overlay-section" id="section-R">
-        <div class="resilience-title">R — Resilience Training</div>
+        <div class="overlay-title">R — Resilience Training</div>
         <div class="message italic" id="r1">Take a deep breath. 🌿</div>
         <div class="message"        id="r2">Every puzzle has a solution — just like every challenge in healthcare.</div>
         <div class="message italic" id="r3">You are capable of more than you think. 💛</div>
@@ -671,15 +739,26 @@ elif st.session_state.page == "sudoku":
         <button class="resume-btn" id="resume-R">▶ Continue</button>
       </div>
 
-      <!-- STATE A: Adaptation Support -->
+      <!-- A: Adaptation Support -->
       <div class="overlay-section" id="section-A">
-        <div class="resilience-title">A — Adaptation Support</div>
-        <div class="message"        id="a1">In real onboarding, new healthcare workers aren't thrown in at the deep end.</div>
-        <div class="message italic" id="a2">They build up responsibility step by step — just like you've been doing here.</div>
-        <div class="message"        id="a3">From now on, the task notifications will no longer appear.</div>
-        <div class="message italic" id="a4">This is what phased onboarding feels like: one less pressure at a time. 🌤️</div>
-        <div class="message"        id="a5">A supported start makes all the difference between staying and leaving.</div>
+        <div class="overlay-title">A — Adaptation Support</div>
+        <div class="message"        id="a1">Without a program like CARE, new employees often face everything at once — full workload, icons, pressure, from day one.</div>
+        <div class="message italic" id="a2">Sound familiar? That's what you just experienced. 🎯</div>
+        <div class="message"        id="a3">Thanks to the CARE start program, employers make a different choice. New employees are allowed to start at a calmer pace.</div>
+        <div class="message italic" id="a4">Step by step, they take on more tasks and responsibilities — but it begins gently.</div>
+        <div class="message"        id="a5">That's why the task icons have disappeared. Your employer — through CARE — has decided to reduce the pressure for now. 🌤️</div>
         <button class="resume-btn" id="resume-A">▶ Continue</button>
+      </div>
+
+      <!-- C: Coaching -->
+      <div class="overlay-section" id="section-C">
+        <div class="overlay-title">C — Coaching</div>
+        <div class="message"        id="c1">In the CARE start program, you are never alone.</div>
+        <div class="message italic" id="c2">A coach doesn't solve things for you — they help you find the answer yourself.</div>
+        <div class="message"        id="c3">In healthcare, a good mentor makes the difference between feeling lost and feeling capable.</div>
+        <div class="message italic" id="c4">From now on, you have a coaching panel next to your sudoku. 💡</div>
+        <div class="message"        id="c5">Use it wisely: one hint at a time, one step at a time.</div>
+        <button class="resume-btn" id="resume-C">▶ Continue</button>
       </div>
 
     </div>
@@ -741,44 +820,95 @@ elif st.session_state.page == "sudoku":
       }
 
       // =============================================
+      // HINT BUTTON
+      // =============================================
+      document.getElementById('hint-btn').addEventListener('click', () => {
+        const empties = [];
+        for (let r = 0; r < 9; r++) {
+          for (let c = 0; c < 9; c++) {
+            if (puzzle[r][c] === 0) {
+              const cell = grid.querySelector(`[data-row="${r}"][data-col="${c}"]`);
+              if (!cell.classList.contains('correct') && !cell.classList.contains('hinted')) {
+                empties.push({r, c, cell});
+              }
+            }
+          }
+        }
+        if (empties.length === 0) return;
+        const {r, c, cell} = empties[Math.floor(Math.random() * empties.length)];
+        const inp = cell.querySelector('input');
+        if (inp) {
+          inp.value = solution[r][c];
+          inp.disabled = true;
+          cell.classList.remove('wrong','correct');
+          cell.classList.add('hinted');
+        }
+        // Disable button after use
+        document.getElementById('hint-btn').disabled = true;
+        setTimeout(() => { document.getElementById('hint-btn').disabled = false; }, 8000);
+      });
+
+      // =============================================
+      // COUNTDOWN TIMER
+      // =============================================
+      let timerInterval = null;
+      function startTimer(seconds) {
+        const timerEl = document.getElementById('timer');
+        const doneEl  = document.getElementById('timer-done');
+        let remaining = seconds;
+
+        function tick() {
+          const m = Math.floor(remaining / 60);
+          const s = remaining % 60;
+          timerEl.textContent = m + ':' + String(s).padStart(2,'0');
+          timerEl.classList.remove('warn','urgent');
+          if (remaining <= 10) timerEl.classList.add('urgent');
+          else if (remaining <= 30) timerEl.classList.add('warn');
+          if (remaining <= 0) {
+            clearInterval(timerInterval);
+            timerEl.style.display = 'none';
+            document.getElementById('timer-label').style.display = 'none';
+            doneEl.style.display = 'block';
+            return;
+          }
+          remaining--;
+        }
+        tick();
+        timerInterval = setInterval(tick, 1000);
+      }
+
+      // =============================================
       // FLOATING ICONS + CARE CLOUD
       // =============================================
       const ICONS     = ["🔔","💊","🛏️","🩺","💉","🧪","📋","🧹","🧴","🩹"];
       const EXPIRE_MS = 5000;
       const SAD_MS    = 2000;
 
-      let paused          = false;
-      let careCount       = 0;       // 0=none shown, 1=R shown, 2=A shown
-      let iconsDisabled   = false;   // true after A continue
-      let nextSpawnId     = null;
-      let careCloudShown  = false;   // currently waiting for first CARE cloud
-      const gameStart     = Date.now();
-      let resumeTime      = null;    // when last continue was pressed
-
+      let paused        = false;
+      let careCount     = 0;
+      let iconsDisabled = false;
+      let nextSpawnId   = null;
+      const gameStart   = Date.now();
+      let resumeTime    = null;
       const activeIcons = new Map();
 
-      function scheduleNext(delayOverride) {
-        const delay = delayOverride !== undefined
-          ? delayOverride
-          : (4 + Math.random() * 3) * 1000;
-        nextSpawnId = setTimeout(doSpawn, delay);
+      function scheduleNext(delay) {
+        const d = delay !== undefined ? delay : (4 + Math.random() * 3) * 1000;
+        nextSpawnId = setTimeout(doSpawn, d);
       }
 
       function doSpawn() {
         if (paused || iconsDisabled) return;
+        const now          = Date.now();
+        const sinceStart   = now - gameStart;
+        const sinceResume  = resumeTime ? now - resumeTime : Infinity;
 
-        const now = Date.now();
-        const sinceStart  = now - gameStart;
-        const sinceResume = resumeTime ? now - resumeTime : Infinity;
+        const shouldCare =
+          (careCount === 0 && sinceStart  >= 20000) ||
+          (careCount === 1 && sinceResume >= 15000) ||
+          (careCount === 2 && sinceResume >= 15000);
 
-        // Show CARE cloud if:
-        //  - careCount===0 and 20s since game start
-        //  - careCount===1 and 15s since last continue
-        const shouldShowCare =
-          (careCount === 0 && sinceStart   >= 20000) ||
-          (careCount === 1 && sinceResume  >= 15000);
-
-        if (shouldShowCare) {
+        if (shouldCare) {
           spawnCareCloud();
         } else {
           spawnIcon();
@@ -797,7 +927,7 @@ elif st.session_state.page == "sudoku":
       function spawnIcon() {
         if (iconsDisabled) return;
         const icon = ICONS[Math.floor(Math.random() * ICONS.length)];
-        const el = document.createElement('div');
+        const el   = document.createElement('div');
         el.className = 'task-icon'; el.textContent = icon;
         const {x,y} = randomPos();
         el.style.left = x+'px'; el.style.top = y+'px';
@@ -849,72 +979,84 @@ elif st.session_state.page == "sudoku":
       function pauseGame() {
         paused = true;
         clearTimeout(nextSpawnId);
-
         activeIcons.forEach((entry, el) => {
           clearTimeout(entry.t1); clearTimeout(entry.t2); clearTimeout(entry.tExp);
           entry.remaining = entry.duration - (Date.now() - entry.startedAt);
           el.style.animationPlayState = 'paused';
         });
 
-        // Choose which overlay section to show
         careCount++;
-        const sectionId = careCount === 1 ? 'section-R' : 'section-A';
-        document.querySelectorAll('.overlay-section').forEach(s => s.classList.remove('active'));
-        document.getElementById(sectionId).classList.add('active');
+        const sectionMap = {1:'section-R', 2:'section-A', 3:'section-C'};
+        const prefixMap  = {1:'r',         2:'a',         3:'c'};
+        const countMap   = {1:7,           2:5,           3:5};
+        const btnMap     = {1:'resume-R',  2:'resume-A',  3:'resume-C'};
 
-        // Reset message opacities
+        const sId   = sectionMap[careCount];
+        const pfx   = prefixMap[careCount];
+        const msgN  = countMap[careCount];
+        const btnId = btnMap[careCount];
+
+        document.querySelectorAll('.overlay-section').forEach(s => s.classList.remove('active'));
+        document.getElementById(sId).classList.add('active');
         document.querySelectorAll('.message, .resume-btn').forEach(el => {
           el.classList.remove('show'); el.style.opacity = '0';
         });
-
         document.getElementById('pause-overlay').classList.add('visible');
 
-        // Staggered message reveal
-        const prefix = careCount === 1 ? 'r' : 'a';
-        const count  = careCount === 1 ? 7 : 5;
-        for (let i = 1; i <= count; i++) {
-          const el = document.getElementById(prefix + i);
+        for (let i = 1; i <= msgN; i++) {
+          const el = document.getElementById(pfx + i);
           if (el) setTimeout(() => el.classList.add('show'), i * 900);
         }
-        const btnId = careCount === 1 ? 'resume-R' : 'resume-A';
         setTimeout(() => {
           document.getElementById(btnId).classList.add('show');
-        }, (count + 1) * 900);
+        }, (msgN + 1) * 900);
       }
 
-      document.getElementById('resume-R').addEventListener('click', () => {
-        document.getElementById('pause-overlay').classList.remove('visible');
-        paused = false;
-        resumeTime = Date.now();
-
-        // Unfreeze existing icons
+      function unfreezeIcons() {
         activeIcons.forEach((entry, el) => {
           el.style.animationPlayState = '';
-          const remaining = Math.max(entry.remaining || 1000, 500);
-          entry.tExp = setTimeout(() => expireIcon(el), remaining);
+          const rem = Math.max(entry.remaining || 1000, 500);
+          entry.tExp = setTimeout(() => expireIcon(el), rem);
         });
+      }
 
-        // Next spawn: could be an icon OR the A cloud after 15s
-        // Poll frequently so we catch the 15s window
-        scheduleNext(2000);
+      // R → continue: icons resume, wait 15s for A cloud
+      document.getElementById('resume-R').addEventListener('click', () => {
+        document.getElementById('pause-overlay').classList.remove('visible');
+        paused = false; resumeTime = Date.now();
+        unfreezeIcons();
+        scheduleNext(2000); // poll frequently to catch 15s window
       });
 
+      // A → continue: icons disabled, wait 15s for C cloud
       document.getElementById('resume-A').addEventListener('click', () => {
         document.getElementById('pause-overlay').classList.remove('visible');
-        paused = false;
-        iconsDisabled = true;   // no more icons ever
+        paused = false; iconsDisabled = true; resumeTime = Date.now();
 
-        // Remove any lingering icons
+        // Remove all lingering icons
         activeIcons.forEach((entry, el) => {
           clearTimeout(entry.t1); clearTimeout(entry.t2); clearTimeout(entry.tExp);
           el.remove();
         });
         activeIcons.clear();
         clearTimeout(nextSpawnId);
+
+        // Keep polling for the C cloud after 15s
+        scheduleNext(2000);
       });
 
-      // First spawn: check every 2s until 20s have passed, then show cloud
-      // Start by spawning icons on normal schedule
+      // C → continue: show help panel + start timer
+      document.getElementById('resume-C').addEventListener('click', () => {
+        document.getElementById('pause-overlay').classList.remove('visible');
+        paused = false;
+        clearTimeout(nextSpawnId); // no more spawning after C
+
+        // Show coaching panel
+        document.getElementById('help-panel').classList.add('visible');
+        startTimer(60);
+      });
+
+      // Start: first spawn after 3s
       setTimeout(doSpawn, 3000);
     </script>
-    """, height=640, scrolling=False)
+    """, height=660, scrolling=False)
