@@ -39,23 +39,19 @@ if "game_over_time" not in st.session_state:
 if "start_time_info" not in st.session_state:
     st.session_state.start_time_info = None
 
-# ---- DEV SHORTCUT: Ctrl+Shift+C jumps straight to CARE page ----
-components.html("""
-<script>
-window.parent.document.addEventListener('keydown', function(e) {
-    if (e.ctrlKey && e.shiftKey && e.key === 'C') {
-        var url = new URL(window.parent.location.href);
-        url.searchParams.set('goto', 'care');
-        window.parent.location.href = url.toString();
-    }
-});
-</script>
-""", height=0)
-
-if st.query_params.get("goto") == "care":
-    st.session_state.page = "care"
-    st.query_params.clear()
-    st.rerun()
+# ---- DEV SHORTCUTS: sidebar expander to jump to any page ----
+with st.sidebar:
+    with st.expander("🛠️ Dev shortcuts"):
+        if st.button("→ CARE start program", key="dev_care"):
+            st.session_state.page = "care"
+            st.rerun()
+        if st.button("→ Info page", key="dev_info"):
+            st.session_state.page = "info"
+            st.session_state.start_time_info = None
+            st.rerun()
+        if st.button("→ Game", key="dev_spel"):
+            go_to_spel()
+            st.rerun()
 
 
 # ---- CALLBACK: Go to game page ----
@@ -321,8 +317,8 @@ elif st.session_state.page == "care":
             Our solution
         </div>
         <h1 style="font-family:'Playfair Display',serif; font-weight:900;
-                   font-size:clamp(2.4rem,6vw,4.5rem); text-align:center; color:#6B3A2A;
-                   letter-spacing:0.1em; margin:0 0 0.2rem 0;
+                   font-size:clamp(1.8rem,4.5vw,4rem); text-align:center; color:#6B3A2A;
+                   letter-spacing:0.08em; margin:0 0 0.2rem 0; white-space:nowrap;
                    text-shadow: 2px 3px 0px rgba(180,80,40,0.15);">
             CARE start program
         </h1>
