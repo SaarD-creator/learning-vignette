@@ -537,12 +537,12 @@ elif st.session_state.page == "sudoku":
     components.html("""
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
     <style>
-      * { box-sizing: border-box; margin: 0; padding: 0; }
+      * { box-sizing:border-box; margin:0; padding:0; }
       body {
-        background: linear-gradient(135deg, #FDF3E7 0%, #FAE8D0 40%, #F5DEC8 100%);
-        display: flex; flex-direction: column; align-items: center;
-        padding: 18px 16px 30px; font-family: 'Crimson Text', serif;
-        min-height: 100vh; overflow: hidden;
+        background:linear-gradient(135deg,#FDF3E7 0%,#FAE8D0 40%,#F5DEC8 100%);
+        display:flex; flex-direction:column; align-items:center;
+        padding:18px 16px 30px; font-family:'Crimson Text',serif;
+        min-height:100vh; overflow:hidden;
       }
       h1 { font-family:'Playfair Display',serif; font-weight:900; font-size:2rem; color:#6B3A2A; text-align:center; margin-bottom:4px; }
       .subtitle { font-family:'Crimson Text',serif; font-style:italic; font-size:1rem; color:#A0624A; text-align:center; margin-bottom:18px; }
@@ -575,6 +575,7 @@ elif st.session_state.page == "sudoku":
         to   { box-shadow:inset 0 0 0 3px #D4A010, 0 0 22px rgba(212,160,16,0.9); }
       }
 
+      /* ---- Help panel ---- */
       #help-panel {
         display:none; flex-direction:column; align-items:center;
         background:linear-gradient(160deg,#FDF0E4,#FAE4CC); border:2px solid #E0A070;
@@ -585,26 +586,36 @@ elif st.session_state.page == "sudoku":
       @keyframes slideIn { from{opacity:0;transform:translateX(20px)} to{opacity:1;transform:translateX(0)} }
       .help-title { font-family:'Playfair Display',serif; font-weight:900; font-size:1.1rem; color:#6B3A2A; margin-bottom:0.5rem; text-align:center; }
       .help-sub   { font-family:'Crimson Text',serif; font-style:italic; font-size:0.88rem; color:#A06040; text-align:center; margin-bottom:1rem; line-height:1.4; }
-      #hint-btn {
-        padding:0.55rem 1.1rem; width:100%;
-        font-family:'Playfair Display',serif; font-weight:700; font-size:0.95rem;
-        background:linear-gradient(135deg,#C4663A,#E07B50); color:white; border:none;
-        border-radius:30px; cursor:pointer; box-shadow:0 3px 12px rgba(196,102,58,0.35);
-        transition:transform 0.15s; margin-bottom:1rem;
-      }
-      #hint-btn:hover { transform:scale(1.05); }
+
       #hint-display {
         font-family:'Crimson Text',serif; font-size:1rem; color:#6B3A2A; text-align:center;
-        line-height:1.5; min-height:52px; margin-bottom:1.1rem; font-style:italic;
+        line-height:1.5; min-height:64px; margin-bottom:1.1rem; font-style:italic;
+        animation:fadeIn 0.5s ease;
       }
-      #hint-display strong { font-style:normal; font-size:1.6rem; color:#8B5E00; display:block; }
+      #hint-display strong { font-style:normal; font-size:1.7rem; color:#8B5E00; display:block; margin:2px 0; }
+
+      /* ---- Timer ---- */
       #timer { font-family:'Playfair Display',serif; font-weight:900; font-size:2.4rem; color:#6B3A2A; line-height:1; }
       #timer.warn   { color:#C47A2A; }
       #timer.urgent { color:#C43A2A; animation:timerPulse 0.4s ease-in-out infinite alternate; }
       @keyframes timerPulse { from{transform:scale(1)} to{transform:scale(1.08)} }
       #timer-label { font-family:'Crimson Text',serif; font-style:italic; font-size:0.8rem; color:#A06040; margin-top:4px; text-align:center; }
-      #timer-done  { font-family:'Crimson Text',serif; font-style:italic; font-size:0.9rem; color:#6B3A2A; text-align:center; margin-top:6px; display:none; }
 
+      /* ---- Mini CARE cloud (in panel after timer) ---- */
+      #panel-care-cloud {
+        display:none; cursor:pointer; margin-top:8px;
+        animation:float 2s ease-in-out infinite alternate;
+        filter:drop-shadow(0 3px 10px rgba(196,102,58,0.3));
+        position:relative; user-select:none;
+      }
+      #panel-care-cloud .cloud-label {
+        position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+        font-family:'Playfair Display',serif; font-weight:900; font-size:1.15rem;
+        color:#6B3A2A; letter-spacing:0.08em;
+      }
+      @keyframes float { from{transform:translateY(0)} to{transform:translateY(-6px)} }
+
+      /* ---- Floating icons ---- */
       .task-icon {
         position:fixed; font-size:2.8rem; cursor:pointer; z-index:500;
         animation:pulse 0.8s ease-in-out infinite alternate;
@@ -621,6 +632,7 @@ elif st.session_state.page == "sudoku":
       @keyframes pulse-urgent { from{transform:scale(0.95)} to{transform:scale(1.2)}  }
       @keyframes fadeout      { 0%{opacity:1} 60%{opacity:1} 100%{opacity:0;transform:scale(0.6)} }
 
+      /* ---- CARE cloud (floating) ---- */
       .care-cloud {
         position:fixed; cursor:pointer; z-index:501; user-select:none;
         animation:float 2s ease-in-out infinite alternate;
@@ -630,8 +642,8 @@ elif st.session_state.page == "sudoku":
         position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
         font-family:'Playfair Display',serif; font-weight:900; font-size:1.5rem; color:#6B3A2A; letter-spacing:0.08em;
       }
-      @keyframes float { from{transform:translateY(0)} to{transform:translateY(-8px)} }
 
+      /* ---- Pause overlay ---- */
       #pause-overlay {
         display:none; position:fixed; inset:0; z-index:9999;
         background:rgba(253,243,231,0.97); flex-direction:column; align-items:center; justify-content:center;
@@ -663,11 +675,16 @@ elif st.session_state.page == "sudoku":
       <div id="help-panel">
         <div class="help-title">💡 Coaching</div>
         <div class="help-sub">A good coach shows you where to look — not what to write.</div>
-        <button id="hint-btn">Help</button>
         <div id="hint-display"></div>
         <div id="timer">1:00</div>
         <div id="timer-label">remaining</div>
-        <div id="timer-done">Take your time. 🌿</div>
+        <div id="panel-care-cloud">
+          <svg width="100" height="66" viewBox="0 0 120 80" xmlns="http://www.w3.org/2000/svg">
+            <path d="M100,55 Q115,55 115,42 Q115,30 103,30 Q101,18 90,18 Q84,10 74,12 Q66,4 54,8 Q42,4 36,14 Q24,14 22,26 Q12,28 12,40 Q12,55 28,55 Z"
+                  fill="#FDE8D0" stroke="#E07B50" stroke-width="2.5"/>
+          </svg>
+          <div class="cloud-label">CARE</div>
+        </div>
       </div>
     </div>
 
@@ -698,7 +715,7 @@ elif st.session_state.page == "sudoku":
         <div class="message italic" id="c2">A coach doesn't solve things for you — they help you find the answer yourself. 💡</div>
         <div class="message"        id="c3">In healthcare, a good mentor makes the difference between feeling lost and feeling capable.</div>
         <div class="message italic" id="c4">From now on, you have a coaching panel next to your sudoku.</div>
-        <div class="message"        id="c5">Click <em>Help</em> whenever you're stuck — it will point you in the right direction.</div>
+        <div class="message"        id="c5">It will automatically point you in the right direction — one step at a time.</div>
         <button class="resume-btn" id="resume-C">▶ Continue</button>
       </div>
     </div>
@@ -740,7 +757,7 @@ elif st.session_state.page == "sudoku":
               if (ok && cell === currentHintCell) {
                 cell.classList.remove('hint-active');
                 currentHintCell = null;
-                document.getElementById('hint-display').innerHTML = 'Well done! 🎉';
+                showNextHint(); // immediately show next hint after correct fill
               }
             });
             cell.appendChild(inp);
@@ -749,29 +766,43 @@ elif st.session_state.page == "sudoku":
         }
       }
 
-      // ---- HINT ----
-      document.getElementById('hint-btn').addEventListener('click', () => {
+      // ---- AUTO HINT ----
+      let hintInterval = null;
+
+      function showNextHint() {
         if (currentHintCell) { currentHintCell.classList.remove('hint-active'); currentHintCell = null; }
         const candidates = [];
         for (let r = 0; r < 9; r++)
           for (let c = 0; c < 9; c++)
             if (puzzle[r][c] === 0) {
-              const cell = grid.querySelector(`[data-row="${r}"][data-col="${c}"]`);
-              if (!cell.classList.contains('correct')) candidates.push({r,c,cell});
+              const cell = grid.querySelector('[data-row="'+r+'"][data-col="'+c+'"]');
+              if (!cell.classList.contains('correct')) candidates.push({r, c, cell});
             }
-        if (!candidates.length) { document.getElementById('hint-display').innerHTML = 'All cells filled correctly! 🎉'; return; }
+        if (!candidates.length) {
+          document.getElementById('hint-display').innerHTML = 'All cells filled correctly! 🎉';
+          clearInterval(hintInterval);
+          return;
+        }
         const {r, c, cell} = candidates[Math.floor(Math.random() * candidates.length)];
         cell.classList.add('hint-active');
         currentHintCell = cell;
-        document.getElementById('hint-display').innerHTML =
-          'Fill in<strong>' + solution[r][c] + '</strong>in the glowing cell ✨';
-      });
+        const disp = document.getElementById('hint-display');
+        disp.style.animation = 'none';
+        disp.offsetHeight; // reflow to restart animation
+        disp.style.animation = '';
+        disp.innerHTML = 'Fill in<strong>' + solution[r][c] + '</strong>in the glowing cell ✨';
+      }
+
+      function startAutoHint() {
+        showNextHint();                    // immediate first hint
+        hintInterval = setInterval(showNextHint, 12000); // new hint every 12s
+      }
 
       // ---- TIMER ----
       let timerInterval = null;
       function startTimer(seconds) {
         const timerEl = document.getElementById('timer');
-        const doneEl  = document.getElementById('timer-done');
+        const labelEl = document.getElementById('timer-label');
         let remaining = seconds;
         function tick() {
           const m = Math.floor(remaining/60), s = remaining%60;
@@ -779,13 +810,19 @@ elif st.session_state.page == "sudoku":
           timerEl.className = remaining<=10 ? 'urgent' : remaining<=30 ? 'warn' : '';
           if (remaining-- <= 0) {
             clearInterval(timerInterval);
-            timerEl.style.display='none';
-            document.getElementById('timer-label').style.display='none';
-            doneEl.style.display='block';
+            timerEl.style.display = 'none';
+            labelEl.style.display = 'none';
+            // Show CARE cloud in panel
+            document.getElementById('panel-care-cloud').style.display = 'block';
           }
         }
         tick(); timerInterval = setInterval(tick, 1000);
       }
+
+      // Panel CARE cloud click (4th cloud — behaviour TBD)
+      document.getElementById('panel-care-cloud').addEventListener('click', () => {
+        // placeholder — user will define later
+      });
 
       // ---- ICONS + CARE CLOUDS ----
       const ICONS=['🔔','💊','🛏️','🩺','💉','🧪','📋','🧹','🧴','🩹'];
@@ -804,12 +841,11 @@ elif st.session_state.page == "sudoku":
         if (paused || spawningStopped) return;
         const now=Date.now(), sinceStart=now-gameStart, sinceResume=resumeTime?now-resumeTime:Infinity;
         const shouldCare =
-          (careCount===0 && sinceStart>=20000) ||
+          (careCount===0 && sinceStart>=20000)  ||
           (careCount===1 && sinceResume>=15000) ||
           (careCount===2 && sinceResume>=15000);
         if (shouldCare) {
           spawnCareCloud();
-          // no scheduleNext here — resumes after continue is clicked
         } else if (!iconsDisabled) {
           spawnIcon(); scheduleNext();
         } else {
@@ -893,13 +929,14 @@ elif st.session_state.page == "sudoku":
         paused=false; iconsDisabled=true; resumeTime=Date.now();
         activeIcons.forEach((entry,el)=>{clearTimeout(entry.t1);clearTimeout(entry.t2);clearTimeout(entry.tExp);el.remove();});
         activeIcons.clear(); clearTimeout(nextSpawnId);
-        scheduleNext(2000); // keep polling — C cloud will come after 15s
+        scheduleNext(2000);
       });
 
       document.getElementById('resume-C').addEventListener('click',()=>{
         document.getElementById('pause-overlay').classList.remove('visible');
         paused=false; spawningStopped=true; clearTimeout(nextSpawnId);
         document.getElementById('help-panel').classList.add('visible');
+        startAutoHint();
         startTimer(60);
       });
 
