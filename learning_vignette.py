@@ -172,10 +172,15 @@ elif st.session_state.page == "spel":
     st.markdown(
         """
         <style>
-        div[data-testid="stButton"] button {
-            font-size: 2.5rem !important;
-            line-height: 1.2 !important;
-            padding: 0.4rem 0 !important;
+        div[data-testid="stButton"] > button {
+            font-size: 3.5rem !important;
+            line-height: 1 !important;
+            height: 5rem !important;
+            min-height: 5rem !important;
+            padding: 0.5rem !important;
+        }
+        div[data-testid="stButton"] > button p {
+            font-size: 3.5rem !important;
         }
         </style>
         """,
