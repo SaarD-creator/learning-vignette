@@ -1,4 +1,5 @@
 import streamlit as st
+import streamlit.components.v1 as components
 import random
 import time
 from streamlit_autorefresh import st_autorefresh
@@ -38,20 +39,34 @@ if "game_over_time" not in st.session_state:
 if "start_time_info" not in st.session_state:
     st.session_state.start_time_info = None
 
+# ---- DEV SHORTCUT: Ctrl+Shift+C jumps straight to CARE page ----
+components.html("""
+<script>
+window.parent.document.addEventListener('keydown', function(e) {
+    if (e.ctrlKey && e.shiftKey && e.key === 'C') {
+        var url = new URL(window.parent.location.href);
+        url.searchParams.set('goto', 'care');
+        window.parent.location.href = url.toString();
+    }
+});
+</script>
+""", height=0)
 
-# ---- CALLBACK: Go to next page ----
+if st.query_params.get("goto") == "care":
+    st.session_state.page = "care"
+    st.query_params.clear()
+    st.rerun()
+
+
+# ---- CALLBACK: Go to game page ----
 
 def go_to_spel():
     st.session_state.page = "spel"
     st.session_state.feedback_given = False
-
-    # RESET STATE
     st.session_state.game_over = False
     st.session_state.game_over_time = None
     st.session_state.start_time_info = None
     st.session_state.error_tasks = 0
-
-    # ICONS
     icons = [
         {"icon": "🔔", "name": "Call bell"},
         {"icon": "💊", "name": "Medication"},
@@ -66,51 +81,43 @@ def go_to_spel():
     ]
     random.shuffle(icons)
     st.session_state.icons = icons
-
     st.session_state.active_tasks = []
     st.session_state.completed_tasks = []
     st.session_state.task_count = 0
     st.session_state.last_task_time = time.time()
 
 
-# ---- PAGINA 1 ----
+# ======================================================
+# PAGINA 1
+# ======================================================
 
 if st.session_state.page == "vraag":
 
     st.title("Learning vignette")
-
     st.write(
         "Welcome to the learning vignette of group 48. "
         "Please start by answering the next question:"
     )
 
     col1, col2 = st.columns([3, 1])
-
     with col1:
         waarde = st.number_input(
             "Which percentage of employees in the health sector quit within their first year?",
-            min_value=0,
-            max_value=100,
-            step=1,
-            format="%d"
+            min_value=0, max_value=100, step=1, format="%d"
         )
-
     with col2:
         st.write("%")
 
     if st.button("Submit answer") or st.session_state.feedback_given:
-
         st.session_state.feedback_given = True
         correct_of_dichtbij = False
 
         if 30 <= waarde <= 31:
             st.success("Correct! Well done. The actual percentage is 30.02%.")
             correct_of_dichtbij = True
-
         elif 20 <= waarde <= 40:
             st.info("You're close! The correct answer is 30.02%.")
             correct_of_dichtbij = True
-
         else:
             st.error(
                 "Your answer is quite far from the actual percentage. "
@@ -118,11 +125,12 @@ if st.session_state.page == "vraag":
             )
 
         if correct_of_dichtbij:
-            # FIX: use on_click callback so the page switches in a single click
             st.button("Go to the next page", on_click=go_to_spel)
 
 
-# ---- PAGINA 2 ----
+# ======================================================
+# PAGINA 2
+# ======================================================
 
 elif st.session_state.page == "spel":
 
@@ -131,7 +139,6 @@ elif st.session_state.page == "spel":
 
     st_autorefresh(interval=1000, key="refresh")
 
-    # ---- INTERVAL ----
     if st.session_state.task_count < 3:
         interval = 5
     elif st.session_state.task_count < 6:
@@ -139,26 +146,20 @@ elif st.session_state.page == "spel":
     else:
         interval = 1
 
-    # ---- NIEUWE TAKEN ----
     if not st.session_state.game_over and st.session_state.task_count < 36:
-
         if time.time() - st.session_state.last_task_time > interval:
-
             new_task = random.choice(st.session_state.icons)
             st.session_state.active_tasks.append(new_task)
-
             st.session_state.task_count += 1
             st.session_state.last_task_time = time.time()
 
-    # ---- STRESS ----
     base_stress = len(st.session_state.active_tasks) / 10
     stress_level = base_stress + (st.session_state.error_tasks * 0.1)
-
     if stress_level >= 1:
         stress_level = 1
         st.session_state.game_over = True
 
-    # ---- STRESS BAR IN SIDEBAR (always visible) ----
+    # ---- STRESS BAR IN SIDEBAR ----
     with st.sidebar:
         st.subheader("🧠 Stress level")
         st.progress(stress_level)
@@ -170,7 +171,6 @@ elif st.session_state.page == "spel":
         else:
             st.error(f"{stress_pct}% — Critical!")
 
-    # ---- TAKEN ----
     st.subheader("Current tasks")
     for task in st.session_state.active_tasks:
         st.warning(f"Click the {task['name']} {task['icon']}")
@@ -197,28 +197,17 @@ elif st.session_state.page == "spel":
     )
 
     cols = st.columns(5)
-
     for i, item in enumerate(st.session_state.icons):
-
         with cols[i % 5]:
-
-            clicked = st.button(
-                item["icon"],
-                key=f"icon_{i}",
-                use_container_width=True
-            )
-
+            clicked = st.button(item["icon"], key=f"icon_{i}", use_container_width=True)
             if clicked:
-
                 if st.session_state.game_over:
                     continue
-
                 matched_task = None
                 for task in st.session_state.active_tasks:
                     if task["icon"] == item["icon"]:
                         matched_task = task
                         break
-
                 if matched_task:
                     st.session_state.completed_tasks.append(matched_task)
                     st.session_state.active_tasks.remove(matched_task)
@@ -228,7 +217,6 @@ elif st.session_state.page == "spel":
 
     # ---- GAME OVER OVERLAY ----
     if st.session_state.game_over:
-
         if st.session_state.game_over_time is None:
             st.session_state.game_over_time = time.time()
 
@@ -236,34 +224,18 @@ elif st.session_state.page == "spel":
             """
             <style>
             .overlay {
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
+                position: fixed; top: 0; left: 0; width: 100%; height: 100%;
                 background-color: rgba(0,0,0,0.7);
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                z-index: 9999;
+                display: flex; justify-content: center; align-items: center; z-index: 9999;
             }
             .message-box {
-                background-color: white;
-                padding: 40px;
-                border-radius: 20px;
-                text-align: center;
-                max-width: 600px;
+                background-color: white; padding: 40px; border-radius: 20px;
+                text-align: center; max-width: 600px;
                 box-shadow: 0 0 30px rgba(0,0,0,0.3);
             }
-            .message-box h1 {
-                color: red;
-                font-size: 40px;
-            }
-            .message-box p {
-                font-size: 20px;
-            }
+            .message-box h1 { color: red; font-size: 40px; }
+            .message-box p { font-size: 20px; }
             </style>
-
             <div class="overlay">
                 <div class="message-box">
                     <h1>⚠️ CRITICAL STRESS LEVEL</h1>
@@ -275,14 +247,15 @@ elif st.session_state.page == "spel":
             unsafe_allow_html=True
         )
 
-        # NA 5 SEC NAAR INFO
         if time.time() - st.session_state.game_over_time > 5:
             st.session_state.page = "info"
             st.session_state.game_over_time = None
             st.rerun()
 
 
-# ---- PAGINA 3 ----
+# ======================================================
+# PAGINA 3
+# ======================================================
 
 elif st.session_state.page == "info":
 
@@ -317,7 +290,7 @@ elif st.session_state.page == "info":
 
     for i in range(min(step + 1, len(teksten))):
         st.write(teksten[i])
-    # Show button only after all texts have appeared
+
     if step + 1 >= len(teksten):
         st.markdown("<br>", unsafe_allow_html=True)
         st.button(
@@ -327,201 +300,210 @@ elif st.session_state.page == "info":
         )
 
 
-# ---- PAGINA 4: CARE ----
+# ======================================================
+# PAGINA 4: CARE START PROGRAM
+# ======================================================
 
 elif st.session_state.page == "care":
 
-    st.markdown(
-        """
+    st.markdown("""
         <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
-
         <style>
         [data-testid="stAppViewContainer"] {
             background: linear-gradient(135deg, #FDF3E7 0%, #FAE8D0 40%, #F5DEC8 100%);
         }
         [data-testid="stHeader"] { background: transparent !important; }
         .main .block-container { padding-top: 2rem !important; }
-
-        .care-title {
-            font-family: 'Crimson Text', serif;
-            font-size: clamp(1.4rem, 3vw, 2rem);
-            color: #6B3A2A;
-            text-align: center;
-            letter-spacing: 0.04em;
-            margin-bottom: 0.2rem;
-        }
-        .care-tagline {
-            font-family: 'Crimson Text', serif;
-            font-style: italic;
-            font-size: 1.1rem;
-            color: #A0624A;
-            text-align: center;
-            margin-bottom: 2.5rem;
-        }
-        .care-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 20px;
-            max-width: 860px;
-            margin: 0 auto 2.5rem auto;
-        }
-        .care-card {
-            perspective: 900px;
-            cursor: pointer;
-            height: 280px;
-        }
-        .care-card-inner {
-            position: relative;
-            width: 100%;
-            height: 100%;
-            transform-style: preserve-3d;
-            transition: transform 0.65s cubic-bezier(0.4, 0.2, 0.2, 1);
-            border-radius: 20px;
-        }
-        .care-card.flipped .care-card-inner { transform: rotateY(180deg); }
-        .care-front, .care-back {
-            position: absolute;
-            inset: 0;
-            backface-visibility: hidden;
-            -webkit-backface-visibility: hidden;
-            border-radius: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 1.2rem;
-        }
-        .care-front { box-shadow: 0 8px 32px rgba(100,40,20,0.13), 0 2px 8px rgba(100,40,20,0.08); }
-        .card-c .care-front { background: linear-gradient(160deg, #C4663A, #E07B50); }
-        .card-a .care-front { background: linear-gradient(160deg, #D4933A, #EFB55A); }
-        .card-r .care-front { background: linear-gradient(160deg, #7A9E7E, #9DC49F); }
-        .card-e .care-front { background: linear-gradient(160deg, #C4737A, #E09298); }
-        .care-letter {
-            font-family: 'Playfair Display', serif;
-            font-weight: 900;
-            font-size: 6.5rem;
-            color: rgba(255,255,255,0.95);
-            line-height: 1;
-            text-shadow: 0 4px 18px rgba(0,0,0,0.18);
-        }
-        .care-hint {
-            font-family: 'Crimson Text', serif;
-            font-style: italic;
-            font-size: 0.85rem;
-            color: rgba(255,255,255,0.75);
-            margin-top: 0.5rem;
-        }
-        .care-back {
-            transform: rotateY(180deg);
-            box-shadow: 0 8px 32px rgba(100,40,20,0.13);
-        }
-        .card-c .care-back { background: linear-gradient(160deg, #FAF0EA, #FDE8DC); border: 2px solid #E07B50; }
-        .card-a .care-back { background: linear-gradient(160deg, #FDF5E8, #FEE9C4); border: 2px solid #EFB55A; }
-        .card-r .care-back { background: linear-gradient(160deg, #EFF6F0, #D9EDD9); border: 2px solid #9DC49F; }
-        .card-e .care-back { background: linear-gradient(160deg, #FBF0F1, #FDE0E2); border: 2px solid #E09298; }
-        .care-back-letter {
-            font-family: 'Playfair Display', serif;
-            font-weight: 900;
-            font-size: 2.8rem;
-            line-height: 1;
-        }
-        .card-c .care-back-letter { color: #C4663A; }
-        .card-a .care-back-letter { color: #C47A2A; }
-        .card-r .care-back-letter { color: #4A7A4E; }
-        .card-e .care-back-letter { color: #B05860; }
-        .care-word {
-            font-family: 'Playfair Display', serif;
-            font-size: 1.05rem;
-            font-weight: 700;
-            margin-top: 0.4rem;
-            text-align: center;
-        }
-        .card-c .care-word { color: #8B3A20; }
-        .card-a .care-word { color: #8B5A10; }
-        .card-r .care-word { color: #2A5A2E; }
-        .card-e .care-word { color: #8B3840; }
-        .care-desc {
-            font-family: 'Crimson Text', serif;
-            font-size: 0.95rem;
-            line-height: 1.45;
-            text-align: center;
-            margin-top: 0.7rem;
-            color: #5A3A30;
-        }
-        .care-footer {
-            font-family: 'Crimson Text', serif;
-            font-style: italic;
-            text-align: center;
-            color: #A0624A;
-            font-size: 1rem;
-            margin-top: 0.5rem;
-        }
         </style>
 
-        <div class="care-title">Our solution</div>
-        <h1 style="font-family:'Playfair Display',serif; font-weight:900; font-size:clamp(2.8rem,7vw,5rem);
-                   text-align:center; color:#6B3A2A; letter-spacing:0.12em; margin:0 0 0.1rem 0;
+        <div style="font-family:'Crimson Text',serif; font-size:1.3rem; color:#6B3A2A;
+                    text-align:center; letter-spacing:0.06em; margin-bottom:0.1rem;">
+            Our solution
+        </div>
+        <h1 style="font-family:'Playfair Display',serif; font-weight:900;
+                   font-size:clamp(2.4rem,6vw,4.5rem); text-align:center; color:#6B3A2A;
+                   letter-spacing:0.1em; margin:0 0 0.2rem 0;
                    text-shadow: 2px 3px 0px rgba(180,80,40,0.15);">
-            CARE start
+            CARE start program
         </h1>
-        <div class="care-tagline">Click each letter to explore the program</div>
+        <div style="font-family:'Crimson Text',serif; font-style:italic; font-size:1.05rem;
+                    color:#A0624A; text-align:center; margin-bottom:1rem;">
+            Click each letter to reveal what it stands for
+        </div>
+    """, unsafe_allow_html=True)
 
-        <div class="care-grid">
-          <div class="care-card card-c" onclick="this.classList.toggle('flipped')">
-            <div class="care-card-inner">
-              <div class="care-front">
-                <div class="care-letter">C</div>
-                <div class="care-hint">tap to reveal</div>
-              </div>
-              <div class="care-back">
-                <div class="care-back-letter">C</div>
-                <div class="care-word">Coaching</div>
-                <div class="care-desc">Personal guidance from an experienced mentor who helps navigate the first year.</div>
-              </div>
-            </div>
+    # ---- Interactive flip cards via components.html (JS fully works here) ----
+    components.html("""
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    <style>
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body { background: transparent; font-family: sans-serif; }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 18px;
+        max-width: 820px;
+        margin: 0 auto 1.5rem auto;
+        padding: 8px;
+      }
+
+      .card {
+        perspective: 900px;
+        cursor: pointer;
+        height: 260px;
+        user-select: none;
+      }
+
+      .card-inner {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        transform-style: preserve-3d;
+        transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1);
+        border-radius: 22px;
+      }
+
+      .card.flipped .card-inner {
+        transform: rotateY(180deg);
+      }
+
+      .face {
+        position: absolute;
+        inset: 0;
+        border-radius: 22px;
+        backface-visibility: hidden;
+        -webkit-backface-visibility: hidden;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 1.2rem;
+      }
+
+      .front { box-shadow: 0 10px 36px rgba(100,40,20,0.16); }
+      .c .front { background: linear-gradient(150deg, #C4663A, #E07B50); }
+      .a .front { background: linear-gradient(150deg, #D4933A, #EFB55A); }
+      .r .front { background: linear-gradient(150deg, #7A9E7E, #9DC49F); }
+      .e .front { background: linear-gradient(150deg, #C4737A, #E09298); }
+
+      .big-letter {
+        font-family: 'Playfair Display', serif;
+        font-weight: 900;
+        font-size: 7rem;
+        color: rgba(255,255,255,0.95);
+        line-height: 1;
+        text-shadow: 0 5px 20px rgba(0,0,0,0.2);
+        transition: transform 0.2s;
+      }
+      .card:hover:not(.flipped) .big-letter { transform: scale(1.07); }
+
+      .tap-hint {
+        font-family: 'Crimson Text', serif;
+        font-style: italic;
+        font-size: 0.82rem;
+        color: rgba(255,255,255,0.7);
+        margin-top: 8px;
+      }
+
+      .back {
+        transform: rotateY(180deg);
+        box-shadow: 0 10px 36px rgba(100,40,20,0.13);
+      }
+      .c .back { background: #FDE8DC; border: 2.5px solid #E07B50; }
+      .a .back { background: #FEE9C4; border: 2.5px solid #EFB55A; }
+      .r .back { background: #D9EDD9; border: 2.5px solid #9DC49F; }
+      .e .back { background: #FDE0E2; border: 2.5px solid #E09298; }
+
+      .back-letter {
+        font-family: 'Playfair Display', serif;
+        font-weight: 900;
+        font-size: 3rem;
+        line-height: 1;
+      }
+      .c .back-letter { color: #C4663A; }
+      .a .back-letter { color: #C47A2A; }
+      .r .back-letter { color: #4A7A4E; }
+      .e .back-letter { color: #B05860; }
+
+      .word {
+        font-family: 'Playfair Display', serif;
+        font-weight: 700;
+        font-size: 1.15rem;
+        text-align: center;
+        margin-top: 14px;
+        line-height: 1.3;
+      }
+      .c .word { color: #8B3A20; }
+      .a .word { color: #8B5A10; }
+      .r .word { color: #2A5A2E; }
+      .e .word { color: #8B3840; }
+
+      .footer {
+        font-family: 'Crimson Text', serif;
+        font-style: italic;
+        text-align: center;
+        color: #A0624A;
+        font-size: 1rem;
+        padding-bottom: 10px;
+      }
+    </style>
+
+    <div class="grid">
+
+      <div class="card c" onclick="this.classList.toggle('flipped')">
+        <div class="card-inner">
+          <div class="face front">
+            <div class="big-letter">C</div>
+            <div class="tap-hint">click to reveal</div>
           </div>
-          <div class="care-card card-a" onclick="this.classList.toggle('flipped')">
-            <div class="care-card-inner">
-              <div class="care-front">
-                <div class="care-letter">A</div>
-                <div class="care-hint">tap to reveal</div>
-              </div>
-              <div class="care-back">
-                <div class="care-back-letter">A</div>
-                <div class="care-word">Adaptation support</div>
-                <div class="care-desc">Structured support to ease the transition from education into professional healthcare.</div>
-              </div>
-            </div>
-          </div>
-          <div class="care-card card-r" onclick="this.classList.toggle('flipped')">
-            <div class="care-card-inner">
-              <div class="care-front">
-                <div class="care-letter">R</div>
-                <div class="care-hint">tap to reveal</div>
-              </div>
-              <div class="care-back">
-                <div class="care-back-letter">R</div>
-                <div class="care-word">Resilience training</div>
-                <div class="care-desc">Building the mental strength to handle pressure, setbacks and emotional intensity.</div>
-              </div>
-            </div>
-          </div>
-          <div class="care-card card-e" onclick="this.classList.toggle('flipped')">
-            <div class="care-card-inner">
-              <div class="care-front">
-                <div class="care-letter">E</div>
-                <div class="care-hint">tap to reveal</div>
-              </div>
-              <div class="care-back">
-                <div class="care-back-letter">E</div>
-                <div class="care-word">Early feedback</div>
-                <div class="care-desc">Timely, constructive feedback loops that build confidence and prevent silent struggles.</div>
-              </div>
-            </div>
+          <div class="face back">
+            <div class="back-letter">C</div>
+            <div class="word">Coaching</div>
           </div>
         </div>
+      </div>
 
-        <div class="care-footer">✦ Together, these four pillars make healthcare workers stay. ✦</div>
-        """,
-        unsafe_allow_html=True
-    )
+      <div class="card a" onclick="this.classList.toggle('flipped')">
+        <div class="card-inner">
+          <div class="face front">
+            <div class="big-letter">A</div>
+            <div class="tap-hint">click to reveal</div>
+          </div>
+          <div class="face back">
+            <div class="back-letter">A</div>
+            <div class="word">Adaptation support</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card r" onclick="this.classList.toggle('flipped')">
+        <div class="card-inner">
+          <div class="face front">
+            <div class="big-letter">R</div>
+            <div class="tap-hint">click to reveal</div>
+          </div>
+          <div class="face back">
+            <div class="back-letter">R</div>
+            <div class="word">Resilience training</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card e" onclick="this.classList.toggle('flipped')">
+        <div class="card-inner">
+          <div class="face front">
+            <div class="big-letter">E</div>
+            <div class="tap-hint">click to reveal</div>
+          </div>
+          <div class="face back">
+            <div class="back-letter">E</div>
+            <div class="word">Early feedback</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="footer">✦ Together, these four pillars make healthcare workers stay. ✦</div>
+    """, height=340)
