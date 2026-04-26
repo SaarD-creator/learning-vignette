@@ -541,192 +541,137 @@ elif st.session_state.page == "sudoku":
       body {
         background: linear-gradient(135deg, #FDF3E7 0%, #FAE8D0 40%, #F5DEC8 100%);
         display: flex; flex-direction: column; align-items: center;
-        padding: 18px 16px 30px;
-        font-family: 'Crimson Text', serif;
+        padding: 18px 16px 30px; font-family: 'Crimson Text', serif;
         min-height: 100vh; overflow: hidden;
       }
-      h1 {
-        font-family: 'Playfair Display', serif; font-weight: 900;
-        font-size: 2rem; color: #6B3A2A; text-align: center;
-        margin-bottom: 4px; text-shadow: 1px 2px 0 rgba(180,80,40,0.12);
-      }
-      .subtitle {
-        font-family: 'Crimson Text', serif; font-style: italic;
-        font-size: 1rem; color: #A0624A; text-align: center; margin-bottom: 18px;
-      }
+      h1 { font-family:'Playfair Display',serif; font-weight:900; font-size:2rem; color:#6B3A2A; text-align:center; margin-bottom:4px; }
+      .subtitle { font-family:'Crimson Text',serif; font-style:italic; font-size:1rem; color:#A0624A; text-align:center; margin-bottom:18px; }
 
-      /* ---- Game row: sudoku + help panel side by side ---- */
-      #game-row {
-        display: flex; flex-direction: row; align-items: flex-start;
-        gap: 24px; justify-content: center;
-      }
+      #game-row { display:flex; flex-direction:row; align-items:flex-start; gap:24px; justify-content:center; }
 
-      /* ---- Sudoku grid ---- */
       #sudoku {
-        display: grid;
-        grid-template-columns: repeat(9, 50px);
-        grid-template-rows: repeat(9, 50px);
-        border: 3px solid #8B3A20; background: #C4866A;
-        gap: 1px; box-shadow: 0 8px 32px rgba(100,40,20,0.18);
-        border-radius: 6px; overflow: hidden; flex-shrink: 0;
+        display:grid; grid-template-columns:repeat(9,50px); grid-template-rows:repeat(9,50px);
+        border:3px solid #8B3A20; background:#C4866A; gap:1px;
+        box-shadow:0 8px 32px rgba(100,40,20,0.18); border-radius:6px; overflow:hidden; flex-shrink:0;
       }
       .cell {
-        width: 50px; height: 50px; background: #FDF6EC;
-        display: flex; align-items: center; justify-content: center;
-        font-size: 1.35rem; font-family: 'Playfair Display', serif;
-        font-weight: 700; color: #4A2510; transition: background 0.3s;
+        width:50px; height:50px; background:#FDF6EC;
+        display:flex; align-items:center; justify-content:center;
+        font-size:1.35rem; font-family:'Playfair Display',serif; font-weight:700; color:#4A2510; transition:background 0.3s;
       }
-      .cell[data-col="3"], .cell[data-col="6"] { border-left: 2.5px solid #8B3A20; }
-      .cell[data-row="3"], .cell[data-row="6"] { border-top: 2.5px solid #8B3A20; }
+      .cell[data-col="3"],.cell[data-col="6"] { border-left:2.5px solid #8B3A20; }
+      .cell[data-row="3"],.cell[data-row="6"] { border-top:2.5px solid #8B3A20; }
       .cell.empty input {
-        width: 100%; height: 100%; border: none; background: transparent;
-        text-align: center; font-size: 1.35rem;
-        font-family: 'Playfair Display', serif; font-weight: 700;
-        color: #C4663A; outline: none; cursor: text;
+        width:100%; height:100%; border:none; background:transparent; text-align:center;
+        font-size:1.35rem; font-family:'Playfair Display',serif; font-weight:700; color:#C4663A; outline:none;
       }
-      .cell.correct  { background: #C8F0D0; animation: flashGreen 0.5s ease; }
-      .cell.wrong    { background: #FFD0CC; }
-      .cell.hinted   { background: #D4EDFF; }
-      .cell.hinted input { color: #2A6A9E; }
+      .cell.correct { background:#C8F0D0; animation:flashGreen 0.5s ease; }
+      .cell.wrong   { background:#FFD0CC; }
+      .cell.hint-active { background:#FFF8DC !important; animation:hintPulse 0.8s ease-in-out infinite alternate !important; }
+      .cell.hint-active input { color:#8B6000; }
       @keyframes flashGreen { 0%{background:#7BE89A} 100%{background:#C8F0D0} }
+      @keyframes hintPulse {
+        from { box-shadow:inset 0 0 0 3px #D4A010, 0 0 10px rgba(212,160,16,0.5); }
+        to   { box-shadow:inset 0 0 0 3px #D4A010, 0 0 22px rgba(212,160,16,0.9); }
+      }
 
-      /* ---- Help panel ---- */
       #help-panel {
-        display: none;
-        flex-direction: column; align-items: center;
-        background: linear-gradient(160deg, #FDF0E4, #FAE4CC);
-        border: 2px solid #E0A070; border-radius: 18px;
-        padding: 1.4rem 1.2rem; width: 170px;
-        box-shadow: 0 6px 24px rgba(180,80,40,0.13);
-        animation: slideIn 0.5s ease;
+        display:none; flex-direction:column; align-items:center;
+        background:linear-gradient(160deg,#FDF0E4,#FAE4CC); border:2px solid #E0A070;
+        border-radius:18px; padding:1.4rem 1.2rem; width:172px;
+        box-shadow:0 6px 24px rgba(180,80,40,0.13); animation:slideIn 0.5s ease;
       }
-      #help-panel.visible { display: flex; }
+      #help-panel.visible { display:flex; }
       @keyframes slideIn { from{opacity:0;transform:translateX(20px)} to{opacity:1;transform:translateX(0)} }
-
-      .help-title {
-        font-family: 'Playfair Display', serif; font-weight: 900;
-        font-size: 1.1rem; color: #6B3A2A; margin-bottom: 0.6rem; text-align: center;
-      }
-      .help-sub {
-        font-family: 'Crimson Text', serif; font-style: italic;
-        font-size: 0.88rem; color: #A06040; text-align: center; margin-bottom: 1rem;
-        line-height: 1.4;
-      }
+      .help-title { font-family:'Playfair Display',serif; font-weight:900; font-size:1.1rem; color:#6B3A2A; margin-bottom:0.5rem; text-align:center; }
+      .help-sub   { font-family:'Crimson Text',serif; font-style:italic; font-size:0.88rem; color:#A06040; text-align:center; margin-bottom:1rem; line-height:1.4; }
       #hint-btn {
-        padding: 0.55rem 1.1rem;
-        font-family: 'Playfair Display', serif; font-weight: 700; font-size: 0.95rem;
-        background: linear-gradient(135deg, #C4663A, #E07B50);
-        color: white; border: none; border-radius: 30px; cursor: pointer;
-        box-shadow: 0 3px 12px rgba(196,102,58,0.35);
-        transition: transform 0.15s, box-shadow 0.15s; margin-bottom: 1.2rem;
+        padding:0.55rem 1.1rem; width:100%;
+        font-family:'Playfair Display',serif; font-weight:700; font-size:0.95rem;
+        background:linear-gradient(135deg,#C4663A,#E07B50); color:white; border:none;
+        border-radius:30px; cursor:pointer; box-shadow:0 3px 12px rgba(196,102,58,0.35);
+        transition:transform 0.15s; margin-bottom:1rem;
       }
-      #hint-btn:hover { transform: scale(1.05); box-shadow: 0 5px 16px rgba(196,102,58,0.45); }
-      #hint-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+      #hint-btn:hover { transform:scale(1.05); }
+      #hint-display {
+        font-family:'Crimson Text',serif; font-size:1rem; color:#6B3A2A; text-align:center;
+        line-height:1.5; min-height:52px; margin-bottom:1.1rem; font-style:italic;
+      }
+      #hint-display strong { font-style:normal; font-size:1.6rem; color:#8B5E00; display:block; }
+      #timer { font-family:'Playfair Display',serif; font-weight:900; font-size:2.4rem; color:#6B3A2A; line-height:1; }
+      #timer.warn   { color:#C47A2A; }
+      #timer.urgent { color:#C43A2A; animation:timerPulse 0.4s ease-in-out infinite alternate; }
+      @keyframes timerPulse { from{transform:scale(1)} to{transform:scale(1.08)} }
+      #timer-label { font-family:'Crimson Text',serif; font-style:italic; font-size:0.8rem; color:#A06040; margin-top:4px; text-align:center; }
+      #timer-done  { font-family:'Crimson Text',serif; font-style:italic; font-size:0.9rem; color:#6B3A2A; text-align:center; margin-top:6px; display:none; }
 
-      /* ---- Countdown timer ---- */
-      #timer {
-        font-family: 'Playfair Display', serif; font-weight: 900;
-        font-size: 2.4rem; color: #6B3A2A; line-height: 1;
-      }
-      #timer.warn   { color: #C47A2A; }
-      #timer.urgent { color: #C43A2A; animation: pulse 0.4s ease-in-out infinite alternate; }
-      #timer-label {
-        font-family: 'Crimson Text', serif; font-style: italic;
-        font-size: 0.8rem; color: #A06040; margin-top: 4px; text-align: center;
-      }
-      #timer-done {
-        font-family: 'Crimson Text', serif; font-style: italic;
-        font-size: 0.9rem; color: #6B3A2A; text-align: center;
-        margin-top: 6px; display: none;
-      }
-
-      /* ---- Floating task icons ---- */
       .task-icon {
-        position: fixed; font-size: 2.8rem; cursor: pointer; z-index: 500;
-        animation: pulse 0.8s ease-in-out infinite alternate;
-        filter: drop-shadow(0 0 8px rgba(196,102,58,0.7));
-        user-select: none; background: rgba(255,255,255,0.88);
-        border-radius: 50%; padding: 4px; line-height: 1; transition: transform 0.15s;
+        position:fixed; font-size:2.8rem; cursor:pointer; z-index:500;
+        animation:pulse 0.8s ease-in-out infinite alternate;
+        filter:drop-shadow(0 0 8px rgba(196,102,58,0.7));
+        user-select:none; background:rgba(255,255,255,0.88); border-radius:50%; padding:4px; line-height:1;
       }
-      .task-icon:hover { transform: scale(1.15); }
-      .task-icon.warn   { filter: drop-shadow(0 0 10px rgba(220,140,0,0.9));   animation: pulse-warn 0.5s ease-in-out infinite alternate; }
-      .task-icon.urgent { filter: drop-shadow(0 0 13px rgba(200,30,30,0.95));  animation: pulse-urgent 0.22s ease-in-out infinite alternate; }
-      .task-icon.clicked { transform: scale(0); opacity: 0; transition: transform 0.22s, opacity 0.22s; }
-      .sad-icon { position: fixed; font-size: 2.8rem; z-index: 500; animation: fadeout 2s forwards; user-select: none; line-height: 1; }
-
+      .task-icon:hover  { transform:scale(1.15); }
+      .task-icon.warn   { filter:drop-shadow(0 0 10px rgba(220,140,0,0.9));  animation:pulse-warn 0.5s ease-in-out infinite alternate; }
+      .task-icon.urgent { filter:drop-shadow(0 0 13px rgba(200,30,30,0.95)); animation:pulse-urgent 0.22s ease-in-out infinite alternate; }
+      .task-icon.clicked { transform:scale(0); opacity:0; transition:transform 0.22s,opacity 0.22s; }
+      .sad-icon { position:fixed; font-size:2.8rem; z-index:500; animation:fadeout 2s forwards; user-select:none; line-height:1; }
       @keyframes pulse        { from{transform:scale(1)}    to{transform:scale(1.1)}  }
       @keyframes pulse-warn   { from{transform:scale(1)}    to{transform:scale(1.15)} }
       @keyframes pulse-urgent { from{transform:scale(0.95)} to{transform:scale(1.2)}  }
-      @keyframes fadeout      { 0%{opacity:1;transform:scale(1)} 60%{opacity:1;transform:scale(1.1)} 100%{opacity:0;transform:scale(0.6)} }
+      @keyframes fadeout      { 0%{opacity:1} 60%{opacity:1} 100%{opacity:0;transform:scale(0.6)} }
 
-      /* ---- CARE cloud ---- */
       .care-cloud {
-        position: fixed; cursor: pointer; z-index: 501; user-select: none;
-        animation: float 2s ease-in-out infinite alternate;
-        filter: drop-shadow(0 4px 16px rgba(196,102,58,0.35));
+        position:fixed; cursor:pointer; z-index:501; user-select:none;
+        animation:float 2s ease-in-out infinite alternate;
+        filter:drop-shadow(0 4px 16px rgba(196,102,58,0.35));
       }
       .care-cloud .cloud-label {
-        position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
-        font-family: 'Playfair Display', serif; font-weight: 900;
-        font-size: 1.5rem; color: #6B3A2A; letter-spacing: 0.08em;
+        position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+        font-family:'Playfair Display',serif; font-weight:900; font-size:1.5rem; color:#6B3A2A; letter-spacing:0.08em;
       }
       @keyframes float { from{transform:translateY(0)} to{transform:translateY(-8px)} }
 
-      /* ---- Pause overlay ---- */
       #pause-overlay {
-        display: none; position: fixed; inset: 0; z-index: 9999;
-        background: rgba(253,243,231,0.97);
-        flex-direction: column; align-items: center; justify-content: center;
-        padding: 2rem; text-align: center;
+        display:none; position:fixed; inset:0; z-index:9999;
+        background:rgba(253,243,231,0.97); flex-direction:column; align-items:center; justify-content:center;
+        padding:2rem; text-align:center;
       }
-      #pause-overlay.visible { display: flex; }
-      .overlay-section { display: none; flex-direction: column; align-items: center; }
-      .overlay-section.active { display: flex; }
-      .overlay-title {
-        font-family: 'Playfair Display', serif; font-weight: 900;
-        font-size: 1.9rem; color: #6B3A2A; margin-bottom: 1.2rem;
-        opacity: 0; animation: fadeIn 0.6s 0.2s forwards;
-      }
-      .message {
-        font-family: 'Crimson Text', serif; font-size: 1.15rem;
-        color: #8B4A30; line-height: 1.65; max-width: 540px;
-        margin-bottom: 0.8rem; opacity: 0;
-      }
-      .message.italic { font-style: italic; font-size: 1.22rem; color: #C4663A; }
-      .message.show { animation: fadeIn 0.7s forwards; }
+      #pause-overlay.visible { display:flex; }
+      .overlay-section { display:none; flex-direction:column; align-items:center; }
+      .overlay-section.active { display:flex; }
+      .overlay-title { font-family:'Playfair Display',serif; font-weight:900; font-size:1.9rem; color:#6B3A2A; margin-bottom:1.2rem; opacity:0; animation:fadeIn 0.6s 0.2s forwards; }
+      .message { font-family:'Crimson Text',serif; font-size:1.15rem; color:#8B4A30; line-height:1.65; max-width:540px; margin-bottom:0.8rem; opacity:0; }
+      .message.italic { font-style:italic; font-size:1.22rem; color:#C4663A; }
+      .message.show { animation:fadeIn 0.7s forwards; }
       .resume-btn {
-        margin-top: 1.4rem; padding: 0.7rem 2.2rem;
-        font-family: 'Playfair Display', serif; font-weight: 700; font-size: 1rem;
-        background: linear-gradient(135deg, #C4663A, #E07B50);
-        color: white; border: none; border-radius: 40px; cursor: pointer;
-        box-shadow: 0 4px 16px rgba(196,102,58,0.35); opacity: 0;
-        transition: transform 0.15s, box-shadow 0.15s;
+        margin-top:1.4rem; padding:0.7rem 2.2rem;
+        font-family:'Playfair Display',serif; font-weight:700; font-size:1rem;
+        background:linear-gradient(135deg,#C4663A,#E07B50); color:white; border:none;
+        border-radius:40px; cursor:pointer; box-shadow:0 4px 16px rgba(196,102,58,0.35); opacity:0;
+        transition:transform 0.15s;
       }
-      .resume-btn:hover { transform: scale(1.04); box-shadow: 0 6px 20px rgba(196,102,58,0.45); }
-      .resume-btn.show { animation: fadeIn 0.7s forwards; }
+      .resume-btn:hover { transform:scale(1.04); }
+      .resume-btn.show { animation:fadeIn 0.7s forwards; }
       @keyframes fadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
     </style>
 
     <h1>Solve this Sudoku</h1>
     <p class="subtitle">Make sure to click on every task that appears as well!</p>
-
     <div id="game-row">
       <div id="sudoku"></div>
-
       <div id="help-panel">
         <div class="help-title">💡 Coaching</div>
-        <div class="help-sub">Stuck? A good coach gives you a nudge in the right direction.</div>
-        <button id="hint-btn">Get a hint</button>
+        <div class="help-sub">A good coach shows you where to look — not what to write.</div>
+        <button id="hint-btn">Help</button>
+        <div id="hint-display"></div>
         <div id="timer">1:00</div>
         <div id="timer-label">remaining</div>
         <div id="timer-done">Take your time. 🌿</div>
       </div>
     </div>
 
-    <!-- Pause overlay -->
     <div id="pause-overlay">
-
-      <!-- R: Resilience -->
       <div class="overlay-section" id="section-R">
         <div class="overlay-title">R — Resilience Training</div>
         <div class="message italic" id="r1">Take a deep breath. 🌿</div>
@@ -738,59 +683,41 @@ elif st.session_state.page == "sudoku":
         <div class="message italic" id="r7">You don't need to solve everything at once. 🌱</div>
         <button class="resume-btn" id="resume-R">▶ Continue</button>
       </div>
-
-      <!-- A: Adaptation Support -->
       <div class="overlay-section" id="section-A">
         <div class="overlay-title">A — Adaptation Support</div>
-        <div class="message"        id="a1">Without a program like CARE, new employees often face everything at once — full workload, icons, pressure, from day one.</div>
-        <div class="message italic" id="a2">Sound familiar? That's what you just experienced. 🎯</div>
-        <div class="message"        id="a3">Thanks to the CARE start program, employers make a different choice. New employees are allowed to start at a calmer pace.</div>
-        <div class="message italic" id="a4">Step by step, they take on more tasks and responsibilities — but it begins gently.</div>
-        <div class="message"        id="a5">That's why the task icons have disappeared. Your employer — through CARE — has decided to reduce the pressure for now. 🌤️</div>
+        <div class="message"        id="a1">Without a program like CARE, new employees often face everything at once — icons, sudoku, full pressure, from day one.</div>
+        <div class="message italic" id="a2">Sound familiar? That's exactly what you just experienced. 🎯</div>
+        <div class="message"        id="a3">The CARE start program changes that. Your employer makes a deliberate choice: new employees start at a calmer pace.</div>
+        <div class="message italic" id="a4">Step by step, they take on more tasks and responsibilities. But it begins gently — just like it did here. 🌱</div>
+        <div class="message"        id="a5">That's why the task icons have now disappeared. Through CARE, your employer has chosen to reduce the pressure — for now.</div>
         <button class="resume-btn" id="resume-A">▶ Continue</button>
       </div>
-
-      <!-- C: Coaching -->
       <div class="overlay-section" id="section-C">
         <div class="overlay-title">C — Coaching</div>
         <div class="message"        id="c1">In the CARE start program, you are never alone.</div>
-        <div class="message italic" id="c2">A coach doesn't solve things for you — they help you find the answer yourself.</div>
+        <div class="message italic" id="c2">A coach doesn't solve things for you — they help you find the answer yourself. 💡</div>
         <div class="message"        id="c3">In healthcare, a good mentor makes the difference between feeling lost and feeling capable.</div>
-        <div class="message italic" id="c4">From now on, you have a coaching panel next to your sudoku. 💡</div>
-        <div class="message"        id="c5">Use it wisely: one hint at a time, one step at a time.</div>
+        <div class="message italic" id="c4">From now on, you have a coaching panel next to your sudoku.</div>
+        <div class="message"        id="c5">Click <em>Help</em> whenever you're stuck — it will point you in the right direction.</div>
         <button class="resume-btn" id="resume-C">▶ Continue</button>
       </div>
-
     </div>
 
     <script>
-      // =============================================
-      // SUDOKU
-      // =============================================
       const puzzle = [
-        [5,3,0, 0,7,0, 0,0,0],
-        [6,0,0, 1,9,5, 0,0,0],
-        [0,9,8, 0,0,0, 0,6,0],
-        [8,0,0, 0,6,0, 0,0,3],
-        [4,0,0, 8,0,3, 0,0,1],
-        [7,0,0, 0,2,0, 0,0,6],
-        [0,6,0, 0,0,0, 2,8,0],
-        [0,0,0, 4,1,9, 0,0,5],
-        [0,0,0, 0,8,0, 0,7,9]
+        [5,3,0,0,7,0,0,0,0],[6,0,0,1,9,5,0,0,0],[0,9,8,0,0,0,0,6,0],
+        [8,0,0,0,6,0,0,0,3],[4,0,0,8,0,3,0,0,1],[7,0,0,0,2,0,0,0,6],
+        [0,6,0,0,0,0,2,8,0],[0,0,0,4,1,9,0,0,5],[0,0,0,0,8,0,0,7,9]
       ];
       const solution = [
-        [5,3,4, 6,7,8, 9,1,2],
-        [6,7,2, 1,9,5, 3,4,8],
-        [1,9,8, 3,4,2, 5,6,7],
-        [8,5,9, 7,6,1, 4,2,3],
-        [4,2,6, 8,5,3, 7,9,1],
-        [7,1,3, 9,2,4, 8,5,6],
-        [9,6,1, 5,3,7, 2,8,4],
-        [2,8,7, 4,1,9, 6,3,5],
-        [3,4,5, 2,8,6, 1,7,9]
+        [5,3,4,6,7,8,9,1,2],[6,7,2,1,9,5,3,4,8],[1,9,8,3,4,2,5,6,7],
+        [8,5,9,7,6,1,4,2,3],[4,2,6,8,5,3,7,9,1],[7,1,3,9,2,4,8,5,6],
+        [9,6,1,5,3,7,2,8,4],[2,8,7,4,1,9,6,3,5],[3,4,5,2,8,6,1,7,9]
       ];
 
       const grid = document.getElementById('sudoku');
+      let currentHintCell = null;
+
       for (let r = 0; r < 9; r++) {
         for (let c = 0; c < 9; c++) {
           const cell = document.createElement('div');
@@ -802,16 +729,19 @@ elif st.session_state.page == "sudoku":
             cell.classList.add('empty');
             const inp = document.createElement('input');
             inp.type = 'text'; inp.maxLength = 1;
-            inp.addEventListener('keydown', e => {
-              if (!'123456789Backspace'.includes(e.key)) e.preventDefault();
-            });
+            inp.addEventListener('keydown', e => { if (!'123456789Backspace'.includes(e.key)) e.preventDefault(); });
             inp.addEventListener('input', () => {
               const v = inp.value.replace(/[^1-9]/g,'');
               inp.value = v ? v[v.length-1] : '';
               if (!inp.value) { cell.classList.remove('correct','wrong'); return; }
-              const correct = parseInt(inp.value) === solution[r][c];
-              cell.classList.toggle('correct',  correct);
-              cell.classList.toggle('wrong',   !correct);
+              const ok = parseInt(inp.value) === solution[r][c];
+              cell.classList.toggle('correct', ok);
+              cell.classList.toggle('wrong',  !ok);
+              if (ok && cell === currentHintCell) {
+                cell.classList.remove('hint-active');
+                currentHintCell = null;
+                document.getElementById('hint-display').innerHTML = 'Well done! 🎉';
+              }
             });
             cell.appendChild(inp);
           }
@@ -819,244 +749,160 @@ elif st.session_state.page == "sudoku":
         }
       }
 
-      // =============================================
-      // HINT BUTTON
-      // =============================================
+      // ---- HINT ----
       document.getElementById('hint-btn').addEventListener('click', () => {
-        const empties = [];
-        for (let r = 0; r < 9; r++) {
-          for (let c = 0; c < 9; c++) {
+        if (currentHintCell) { currentHintCell.classList.remove('hint-active'); currentHintCell = null; }
+        const candidates = [];
+        for (let r = 0; r < 9; r++)
+          for (let c = 0; c < 9; c++)
             if (puzzle[r][c] === 0) {
               const cell = grid.querySelector(`[data-row="${r}"][data-col="${c}"]`);
-              if (!cell.classList.contains('correct') && !cell.classList.contains('hinted')) {
-                empties.push({r, c, cell});
-              }
+              if (!cell.classList.contains('correct')) candidates.push({r,c,cell});
             }
-          }
-        }
-        if (empties.length === 0) return;
-        const {r, c, cell} = empties[Math.floor(Math.random() * empties.length)];
-        const inp = cell.querySelector('input');
-        if (inp) {
-          inp.value = solution[r][c];
-          inp.disabled = true;
-          cell.classList.remove('wrong','correct');
-          cell.classList.add('hinted');
-        }
-        // Disable button after use
-        document.getElementById('hint-btn').disabled = true;
-        setTimeout(() => { document.getElementById('hint-btn').disabled = false; }, 8000);
+        if (!candidates.length) { document.getElementById('hint-display').innerHTML = 'All cells filled correctly! 🎉'; return; }
+        const {r, c, cell} = candidates[Math.floor(Math.random() * candidates.length)];
+        cell.classList.add('hint-active');
+        currentHintCell = cell;
+        document.getElementById('hint-display').innerHTML =
+          'Fill in<strong>' + solution[r][c] + '</strong>in the glowing cell ✨';
       });
 
-      // =============================================
-      // COUNTDOWN TIMER
-      // =============================================
+      // ---- TIMER ----
       let timerInterval = null;
       function startTimer(seconds) {
         const timerEl = document.getElementById('timer');
         const doneEl  = document.getElementById('timer-done');
         let remaining = seconds;
-
         function tick() {
-          const m = Math.floor(remaining / 60);
-          const s = remaining % 60;
-          timerEl.textContent = m + ':' + String(s).padStart(2,'0');
-          timerEl.classList.remove('warn','urgent');
-          if (remaining <= 10) timerEl.classList.add('urgent');
-          else if (remaining <= 30) timerEl.classList.add('warn');
-          if (remaining <= 0) {
+          const m = Math.floor(remaining/60), s = remaining%60;
+          timerEl.textContent = m+':'+String(s).padStart(2,'0');
+          timerEl.className = remaining<=10 ? 'urgent' : remaining<=30 ? 'warn' : '';
+          if (remaining-- <= 0) {
             clearInterval(timerInterval);
-            timerEl.style.display = 'none';
-            document.getElementById('timer-label').style.display = 'none';
-            doneEl.style.display = 'block';
-            return;
+            timerEl.style.display='none';
+            document.getElementById('timer-label').style.display='none';
+            doneEl.style.display='block';
           }
-          remaining--;
         }
-        tick();
-        timerInterval = setInterval(tick, 1000);
+        tick(); timerInterval = setInterval(tick, 1000);
       }
 
-      // =============================================
-      // FLOATING ICONS + CARE CLOUD
-      // =============================================
-      const ICONS     = ["🔔","💊","🛏️","🩺","💉","🧪","📋","🧹","🧴","🩹"];
-      const EXPIRE_MS = 5000;
-      const SAD_MS    = 2000;
-
-      let paused        = false;
-      let careCount     = 0;
-      let iconsDisabled = false;
-      let nextSpawnId   = null;
-      const gameStart   = Date.now();
-      let resumeTime    = null;
-      const activeIcons = new Map();
+      // ---- ICONS + CARE CLOUDS ----
+      const ICONS=['🔔','💊','🛏️','🩺','💉','🧪','📋','🧹','🧴','🩹'];
+      const EXPIRE_MS=5000, SAD_MS=2000;
+      let paused=false, careCount=0, iconsDisabled=false, spawningStopped=false;
+      let nextSpawnId=null, resumeTime=null;
+      const gameStart=Date.now();
+      const activeIcons=new Map();
 
       function scheduleNext(delay) {
-        const d = delay !== undefined ? delay : (4 + Math.random() * 3) * 1000;
-        nextSpawnId = setTimeout(doSpawn, d);
+        if (spawningStopped) return;
+        nextSpawnId = setTimeout(doSpawn, delay!==undefined ? delay : (4+Math.random()*3)*1000);
       }
 
       function doSpawn() {
-        if (paused || iconsDisabled) return;
-        const now          = Date.now();
-        const sinceStart   = now - gameStart;
-        const sinceResume  = resumeTime ? now - resumeTime : Infinity;
-
+        if (paused || spawningStopped) return;
+        const now=Date.now(), sinceStart=now-gameStart, sinceResume=resumeTime?now-resumeTime:Infinity;
         const shouldCare =
-          (careCount === 0 && sinceStart  >= 20000) ||
-          (careCount === 1 && sinceResume >= 15000) ||
-          (careCount === 2 && sinceResume >= 15000);
-
+          (careCount===0 && sinceStart>=20000) ||
+          (careCount===1 && sinceResume>=15000) ||
+          (careCount===2 && sinceResume>=15000);
         if (shouldCare) {
           spawnCareCloud();
+          // no scheduleNext here — resumes after continue is clicked
+        } else if (!iconsDisabled) {
+          spawnIcon(); scheduleNext();
         } else {
-          spawnIcon();
-          scheduleNext();
+          scheduleNext(2000); // keep polling for next CARE cloud
         }
       }
 
       function randomPos() {
-        const m = 65;
-        return {
-          x: m + Math.random() * (window.innerWidth  - m*2),
-          y: m + Math.random() * (window.innerHeight - m*2)
-        };
+        const m=65;
+        return { x:m+Math.random()*(window.innerWidth-m*2), y:m+Math.random()*(window.innerHeight-m*2) };
       }
 
       function spawnIcon() {
-        if (iconsDisabled) return;
-        const icon = ICONS[Math.floor(Math.random() * ICONS.length)];
-        const el   = document.createElement('div');
-        el.className = 'task-icon'; el.textContent = icon;
-        const {x,y} = randomPos();
-        el.style.left = x+'px'; el.style.top = y+'px';
+        if (iconsDisabled||spawningStopped) return;
+        const el=document.createElement('div');
+        el.className='task-icon'; el.textContent=ICONS[Math.floor(Math.random()*ICONS.length)];
+        const {x,y}=randomPos(); el.style.left=x+'px'; el.style.top=y+'px';
         document.body.appendChild(el);
-
-        const t1   = setTimeout(() => el.classList.add('warn'),   3000);
-        const t2   = setTimeout(() => el.classList.add('urgent'), 4200);
-        const tExp = setTimeout(() => expireIcon(el), EXPIRE_MS);
-        activeIcons.set(el, {t1, t2, tExp, startedAt: Date.now(), duration: EXPIRE_MS});
-
-        el.addEventListener('click', () => {
-          if (paused) return;
-          const e = activeIcons.get(el);
-          if (e) { clearTimeout(e.t1); clearTimeout(e.t2); clearTimeout(e.tExp); }
-          activeIcons.delete(el);
-          el.classList.add('clicked');
-          setTimeout(() => el.remove(), 300);
+        const t1=setTimeout(()=>el.classList.add('warn'),3000);
+        const t2=setTimeout(()=>el.classList.add('urgent'),4200);
+        const tExp=setTimeout(()=>expireIcon(el),EXPIRE_MS);
+        activeIcons.set(el,{t1,t2,tExp,startedAt:Date.now(),duration:EXPIRE_MS});
+        el.addEventListener('click',()=>{
+          if(paused)return;
+          const e=activeIcons.get(el);
+          if(e){clearTimeout(e.t1);clearTimeout(e.t2);clearTimeout(e.tExp);}
+          activeIcons.delete(el); el.classList.add('clicked'); setTimeout(()=>el.remove(),300);
         });
       }
 
       function expireIcon(el) {
         activeIcons.delete(el);
-        const sad = document.createElement('div');
-        sad.className = 'sad-icon'; sad.textContent = '😢';
-        sad.style.left = el.style.left; sad.style.top = el.style.top;
-        document.body.appendChild(sad);
-        el.remove();
-        setTimeout(() => sad.remove(), SAD_MS);
+        const sad=document.createElement('div'); sad.className='sad-icon'; sad.textContent='😢';
+        sad.style.left=el.style.left; sad.style.top=el.style.top;
+        document.body.appendChild(sad); el.remove(); setTimeout(()=>sad.remove(),SAD_MS);
       }
 
       function spawnCareCloud() {
-        const {x,y} = randomPos();
-        const wrapper = document.createElement('div');
-        wrapper.className = 'care-cloud';
-        wrapper.style.left = x+'px'; wrapper.style.top = y+'px';
-        wrapper.innerHTML = `
-          <svg width="120" height="80" viewBox="0 0 120 80" xmlns="http://www.w3.org/2000/svg">
-            <path d="M100,55 Q115,55 115,42 Q115,30 103,30 Q101,18 90,18 Q84,10 74,12 Q66,4 54,8 Q42,4 36,14 Q24,14 22,26 Q12,28 12,40 Q12,55 28,55 Z"
-                  fill="#FDE8D0" stroke="#E07B50" stroke-width="2.5"/>
-          </svg>
-          <div class="cloud-label">CARE</div>`;
-        document.body.appendChild(wrapper);
-        wrapper.addEventListener('click', () => { wrapper.remove(); pauseGame(); });
+        const {x,y}=randomPos();
+        const w=document.createElement('div'); w.className='care-cloud';
+        w.style.left=x+'px'; w.style.top=y+'px';
+        w.innerHTML='<svg width="120" height="80" viewBox="0 0 120 80" xmlns="http://www.w3.org/2000/svg"><path d="M100,55 Q115,55 115,42 Q115,30 103,30 Q101,18 90,18 Q84,10 74,12 Q66,4 54,8 Q42,4 36,14 Q24,14 22,26 Q12,28 12,40 Q12,55 28,55 Z" fill="#FDE8D0" stroke="#E07B50" stroke-width="2.5"/></svg><div class="cloud-label">CARE</div>';
+        document.body.appendChild(w);
+        w.addEventListener('click',()=>{w.remove();pauseGame();});
       }
 
-      // =============================================
-      // PAUSE / RESUME
-      // =============================================
       function pauseGame() {
-        paused = true;
-        clearTimeout(nextSpawnId);
-        activeIcons.forEach((entry, el) => {
-          clearTimeout(entry.t1); clearTimeout(entry.t2); clearTimeout(entry.tExp);
-          entry.remaining = entry.duration - (Date.now() - entry.startedAt);
-          el.style.animationPlayState = 'paused';
+        paused=true; clearTimeout(nextSpawnId);
+        activeIcons.forEach((entry,el)=>{
+          clearTimeout(entry.t1);clearTimeout(entry.t2);clearTimeout(entry.tExp);
+          entry.remaining=entry.duration-(Date.now()-entry.startedAt);
+          el.style.animationPlayState='paused';
         });
-
         careCount++;
-        const sectionMap = {1:'section-R', 2:'section-A', 3:'section-C'};
-        const prefixMap  = {1:'r',         2:'a',         3:'c'};
-        const countMap   = {1:7,           2:5,           3:5};
-        const btnMap     = {1:'resume-R',  2:'resume-A',  3:'resume-C'};
-
-        const sId   = sectionMap[careCount];
-        const pfx   = prefixMap[careCount];
-        const msgN  = countMap[careCount];
-        const btnId = btnMap[careCount];
-
-        document.querySelectorAll('.overlay-section').forEach(s => s.classList.remove('active'));
-        document.getElementById(sId).classList.add('active');
-        document.querySelectorAll('.message, .resume-btn').forEach(el => {
-          el.classList.remove('show'); el.style.opacity = '0';
-        });
+        const sMap={1:'section-R',2:'section-A',3:'section-C'};
+        const pMap={1:'r',2:'a',3:'c'}, nMap={1:7,2:5,3:5}, bMap={1:'resume-R',2:'resume-A',3:'resume-C'};
+        document.querySelectorAll('.overlay-section').forEach(s=>s.classList.remove('active'));
+        document.getElementById(sMap[careCount]).classList.add('active');
+        document.querySelectorAll('.message,.resume-btn').forEach(el=>{el.classList.remove('show');el.style.opacity='0';});
         document.getElementById('pause-overlay').classList.add('visible');
-
-        for (let i = 1; i <= msgN; i++) {
-          const el = document.getElementById(pfx + i);
-          if (el) setTimeout(() => el.classList.add('show'), i * 900);
-        }
-        setTimeout(() => {
-          document.getElementById(btnId).classList.add('show');
-        }, (msgN + 1) * 900);
+        const pfx=pMap[careCount], n=nMap[careCount];
+        for(let i=1;i<=n;i++){const el=document.getElementById(pfx+i);if(el)setTimeout(()=>el.classList.add('show'),i*900);}
+        setTimeout(()=>document.getElementById(bMap[careCount]).classList.add('show'),(n+1)*900);
       }
 
       function unfreezeIcons() {
-        activeIcons.forEach((entry, el) => {
-          el.style.animationPlayState = '';
-          const rem = Math.max(entry.remaining || 1000, 500);
-          entry.tExp = setTimeout(() => expireIcon(el), rem);
+        activeIcons.forEach((entry,el)=>{
+          el.style.animationPlayState='';
+          const rem=Math.max(entry.remaining||1000,500);
+          entry.tExp=setTimeout(()=>expireIcon(el),rem);
         });
       }
 
-      // R → continue: icons resume, wait 15s for A cloud
-      document.getElementById('resume-R').addEventListener('click', () => {
+      document.getElementById('resume-R').addEventListener('click',()=>{
         document.getElementById('pause-overlay').classList.remove('visible');
-        paused = false; resumeTime = Date.now();
-        unfreezeIcons();
-        scheduleNext(2000); // poll frequently to catch 15s window
+        paused=false; resumeTime=Date.now(); unfreezeIcons(); scheduleNext(2000);
       });
 
-      // A → continue: icons disabled, wait 15s for C cloud
-      document.getElementById('resume-A').addEventListener('click', () => {
+      document.getElementById('resume-A').addEventListener('click',()=>{
         document.getElementById('pause-overlay').classList.remove('visible');
-        paused = false; iconsDisabled = true; resumeTime = Date.now();
-
-        // Remove all lingering icons
-        activeIcons.forEach((entry, el) => {
-          clearTimeout(entry.t1); clearTimeout(entry.t2); clearTimeout(entry.tExp);
-          el.remove();
-        });
-        activeIcons.clear();
-        clearTimeout(nextSpawnId);
-
-        // Keep polling for the C cloud after 15s
-        scheduleNext(2000);
+        paused=false; iconsDisabled=true; resumeTime=Date.now();
+        activeIcons.forEach((entry,el)=>{clearTimeout(entry.t1);clearTimeout(entry.t2);clearTimeout(entry.tExp);el.remove();});
+        activeIcons.clear(); clearTimeout(nextSpawnId);
+        scheduleNext(2000); // keep polling — C cloud will come after 15s
       });
 
-      // C → continue: show help panel + start timer
-      document.getElementById('resume-C').addEventListener('click', () => {
+      document.getElementById('resume-C').addEventListener('click',()=>{
         document.getElementById('pause-overlay').classList.remove('visible');
-        paused = false;
-        clearTimeout(nextSpawnId); // no more spawning after C
-
-        // Show coaching panel
+        paused=false; spawningStopped=true; clearTimeout(nextSpawnId);
         document.getElementById('help-panel').classList.add('visible');
         startTimer(60);
       });
 
-      // Start: first spawn after 3s
       setTimeout(doSpawn, 3000);
     </script>
     """, height=660, scrolling=False)
