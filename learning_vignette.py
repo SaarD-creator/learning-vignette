@@ -642,6 +642,21 @@ elif st.session_state.page == "sudoku":
         transition: background 0.5s;
       }
       .cell.coach-box { /* border drawn via overlay div, no background */ }
+
+      #coach-hint {
+        font-family: 'Crimson Text', serif;
+        font-style: italic;
+        font-size: 1rem;
+        color: #6B3A2A;
+        background: #FDE8D0;
+        border-left: 3px solid #C4663A;
+        border-radius: 6px;
+        padding: 8px 14px;
+        margin: 8px auto 0;
+        max-width: 460px;
+        text-align: center;
+        animation: fadeIn 0.5s ease forwards;
+      }
       /* ---- Floating task icons ---- */
       .task-icon {
         position: fixed;
@@ -791,6 +806,7 @@ elif st.session_state.page == "sudoku":
     </div>
 
     <div id="sudoku"></div>
+    <div id="coach-hint" style="display:none;"></div>
 
     <!-- Pause overlay -->
     <div id="pause-overlay">
@@ -1138,6 +1154,9 @@ elif st.session_state.page == "sudoku":
           .forEach(el => el.classList.remove('coach-stripe', 'coach-num'));
         const outline = document.getElementById('coach-box-outline');
         if (outline) outline.remove();
+        const hint = document.getElementById('coach-hint');
+        hint.style.display = 'none';
+        hint.textContent = '';
       }
 
       // Only hint when row/col elimination leaves exactly 1 candidate in the box
@@ -1223,6 +1242,11 @@ elif st.session_state.page == "sudoku":
         });
 
         drawBoxOutline(boxR, boxC);
+
+        // Show hint text
+        const hint = document.getElementById('coach-hint');
+        hint.textContent = 'The highlighted rows and columns already contain the number ' + targetNum + '. It is missing from the framed box — find the one spot where it fits!';
+        hint.style.display = 'block';
 
         // Fallback refresh every 10s
         coachHintTimeout = setTimeout(showNextHint, 10000);
