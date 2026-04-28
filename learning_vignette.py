@@ -883,6 +883,39 @@ elif st.session_state.page == "sudoku":
       }
       #finish-btn:hover { transform: scale(1.03); box-shadow: 0 6px 20px rgba(196,102,58,0.5); }
 
+      /* ---- Final page overlay ---- */
+      #final-overlay {
+        display: none; position: fixed; inset: 0; z-index: 400;
+        background: linear-gradient(160deg,#FDF6EE 0%,#FAE8D4 100%);
+        align-items: center; justify-content: center;
+        padding: 2rem; text-align: center;
+      }
+      #final-overlay.visible { display: flex; }
+      #final-inner { max-width: 500px; width: 100%; }
+      .final-btn {
+        display: block; width: 100%; max-width: 340px;
+        margin: 0.5rem auto;
+        font-family: 'Playfair Display', serif; font-weight: 700; font-size: 1rem;
+        border-radius: 40px; padding: 0.75rem 1.5rem;
+        cursor: pointer; letter-spacing: 0.04em;
+        transition: transform 0.15s, box-shadow 0.15s;
+        border: none;
+      }
+      .final-btn.primary { background: linear-gradient(135deg,#C4663A,#E07B50); color: white; box-shadow: 0 4px 16px rgba(196,102,58,0.35); }
+      .final-btn.primary:hover { transform: scale(1.03); box-shadow: 0 6px 20px rgba(196,102,58,0.5); }
+      .final-btn.ghost { background: transparent; color: #C4663A; border: 2px solid #C4663A; }
+      .final-btn.ghost:hover { background: rgba(196,102,58,0.06); }
+
+      /* ---- Celebration overlay ---- */
+      #celebration-overlay {
+        display: none; position: fixed; inset: 0; z-index: 500;
+        background: rgba(253,243,231,0.95);
+        align-items: center; justify-content: center; text-align: center;
+      }
+      #celebration-overlay.visible { display: flex; }
+      #confetti-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 501; width:100%; height:100%; }
+      #celebration-msg { position: relative; z-index: 502; max-width: 420px; padding: 2rem; }
+
       #to-summary-btn {
         margin-top: 1.4rem;
         padding: 0.7rem 2.2rem;
@@ -1004,6 +1037,36 @@ elif st.session_state.page == "sudoku":
       </div>
     </div>
 
+    <!-- Final page overlay -->
+    <div id="final-overlay">
+      <div id="final-inner">
+        <div style="font-size:2.5rem;margin-bottom:1rem;">🌿</div>
+        <div style="font-family:'Playfair Display',serif;font-weight:900;font-size:1.9rem;color:#6B3A2A;margin-bottom:0.6rem;line-height:1.2;">You reached the end of the learning vignette.</div>
+        <p style="font-family:'Crimson Text',serif;font-style:italic;font-size:1.1rem;color:#A0624A;line-height:1.7;margin-bottom:2rem;">Thank you for your attention.</p>
+        <div id="final-buttons">
+          <button class="final-btn primary" onclick="showFinishSudoku()">Finish your Sudoku</button>
+          <button class="final-btn ghost" onclick="">Read more about the CARE start program</button>
+          <button class="final-btn ghost" onclick="window.parent.location.reload()">Go back to the beginning</button>
+        </div>
+        <div id="finish-sudoku-choice" style="display:none;margin-top:1.5rem;">
+          <p style="font-family:'Crimson Text',serif;font-style:italic;font-size:1rem;color:#A0624A;margin-bottom:1rem;">Would you like coaching support while finishing?</p>
+          <button class="final-btn primary" style="max-width:260px;" onclick="goFinishSudoku(true)">Yes, with coaching</button>
+          <button class="final-btn ghost"   style="max-width:260px;margin-top:0.4rem;" onclick="goFinishSudoku(false)">No, on my own</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Celebration overlay -->
+    <div id="celebration-overlay">
+      <canvas id="confetti-canvas"></canvas>
+      <div id="celebration-msg">
+        <div style="font-size:3rem;margin-bottom:0.5rem;">🎉</div>
+        <div style="font-family:'Playfair Display',serif;font-weight:900;font-size:2rem;color:#6B3A2A;margin-bottom:0.5rem;">Puzzle complete!</div>
+        <p style="font-family:'Crimson Text',serif;font-style:italic;font-size:1.15rem;color:#A0624A;margin-bottom:1.5rem;">You finished the sudoku. Well done!</p>
+        <button class="final-btn primary" onclick="hideCelebration()">Continue</button>
+      </div>
+    </div>
+
     <script>
       // =============================================
       // COUNTDOWN TIMER
@@ -1091,6 +1154,7 @@ elif st.session_state.page == "sudoku":
                     const span = document.createElement('span');
                     span.textContent = inp.value;
                     cell.replaceChild(span, inp);
+                    checkPuzzleComplete();
                   }, 600);
                 }
               }
@@ -1559,29 +1623,7 @@ elif st.session_state.page == "sudoku":
       function showFinalPage() {
         document.getElementById('care-e-overlay').classList.remove('visible');
         document.getElementById('end-overlay').classList.remove('visible');
-
-        const btnStyle = 'display:block;width:100%;max-width:340px;margin:0.5rem auto;font-family:Playfair Display,serif;font-weight:700;font-size:1rem;border:none;border-radius:40px;padding:0.75rem 1.5rem;cursor:pointer;letter-spacing:0.04em;transition:transform 0.15s,box-shadow 0.15s;';
-        const primaryBtn = btnStyle + 'background:linear-gradient(135deg,#C4663A,#E07B50);color:white;box-shadow:0 4px 16px rgba(196,102,58,0.35);';
-        const ghostBtn   = btnStyle + 'background:transparent;color:#C4663A;border:2px solid #C4663A;';
-
-        document.body.innerHTML =
-          '<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Crimson+Text:ital,wght@0,400;1,400&display=swap" rel="stylesheet">' +
-          '<div id="final-page" style="margin:0;display:flex;align-items:center;justify-content:center;min-height:100vh;background:linear-gradient(160deg,#FDF6EE 0%,#FAE8D4 100%);padding:2rem;box-sizing:border-box;">' +
-          '<div style="max-width:500px;text-align:center;width:100%;">' +
-          '<div style="font-size:2.5rem;margin-bottom:1rem;">🌿</div>' +
-          '<div style="font-family:Playfair Display,serif;font-weight:900;font-size:1.9rem;color:#6B3A2A;margin-bottom:0.6rem;line-height:1.2;">You reached the end of the learning vignette.</div>' +
-          '<p style="font-family:Crimson Text,serif;font-style:italic;font-size:1.1rem;color:#A0624A;line-height:1.7;margin-bottom:2rem;">Thank you for your attention.</p>' +
-          '<div id="final-buttons">' +
-          '<button style="' + primaryBtn + '" onclick="showFinishSudoku()">Finish your Sudoku</button>' +
-          '<button style="' + ghostBtn + '" onclick="">Read more about the CARE start program</button>' +
-          '<button style="' + ghostBtn + '" onclick="window.parent.location.reload()">Go back to the beginning</button>' +
-          '</div>' +
-          '<div id="finish-sudoku-choice" style="display:none;margin-top:1.5rem;">' +
-          '<p style="font-family:Crimson Text,serif;font-style:italic;font-size:1rem;color:#A0624A;margin-bottom:1rem;">Would you like coaching support while finishing?</p>' +
-          '<button style="' + primaryBtn + 'max-width:240px;" onclick="goFinishSudoku(true)">Yes, with coaching</button>' +
-          '<button style="' + ghostBtn + 'max-width:240px;margin-top:0.4rem;" onclick="goFinishSudoku(false)">No, on my own</button>' +
-          '</div>' +
-          '</div></div>';
+        document.getElementById('final-overlay').classList.add('visible');
       }
 
       function showFinishSudoku() {
@@ -1590,16 +1632,82 @@ elif st.session_state.page == "sudoku":
       }
 
       function goFinishSudoku(withCoaching) {
-        // Re-show the sudoku overlay and re-enable inputs
-        document.body.innerHTML = document.body.innerHTML; // reset — actual impl would restore state
+        document.getElementById('final-overlay').classList.remove('visible');
         document.getElementById('end-overlay').classList.remove('visible');
         document.getElementById('care-e-overlay').classList.remove('visible');
-        document.querySelectorAll('.cell.empty input').forEach(inp => inp.disabled = false);
-        timerPaused = true; // timer stays stopped
+        // Re-enable all empty inputs
+        document.querySelectorAll('.cell.empty input').forEach(inp => { inp.disabled = false; });
+        timerPaused = true;
+        coachingActive = false;
+        clearCoachHighlights();
         if (withCoaching) {
           coachingActive = true;
           showNextHint();
         }
+      }
+
+      // =============================================
+      // PUZZLE COMPLETION CHECK + CELEBRATION
+      // =============================================
+      let celebrationShown = false;
+
+      function checkPuzzleComplete() {
+        if (celebrationShown) return;
+        const board = getCurrentBoard();
+        for (let r = 0; r < 9; r++)
+          for (let c = 0; c < 9; c++)
+            if (board[r][c] !== solution[r][c]) return;
+        celebrationShown = true;
+        clearCoachHighlights();
+        setTimeout(showCelebration, 400);
+      }
+
+      function showCelebration() {
+        document.getElementById('celebration-overlay').classList.add('visible');
+        launchConfetti();
+      }
+
+      function hideCelebration() {
+        document.getElementById('celebration-overlay').classList.remove('visible');
+        showFinalPage();
+      }
+
+      function launchConfetti() {
+        const canvas = document.getElementById('confetti-canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width  = window.innerWidth;
+        canvas.height = window.innerHeight;
+        const colors  = ['#C4663A','#E07B50','#FDE8D0','#6B3A2A','#F5C89A','#fff'];
+        const pieces  = Array.from({length: 120}, () => ({
+          x: Math.random() * canvas.width,
+          y: Math.random() * -canvas.height,
+          r: 5 + Math.random() * 7,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          speed: 2 + Math.random() * 4,
+          spin: (Math.random() - 0.5) * 0.2,
+          angle: Math.random() * Math.PI * 2,
+          wobble: Math.random() * 0.05
+        }));
+        let frame = 0;
+        function draw() {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          pieces.forEach(p => {
+            p.y += p.speed;
+            p.angle += p.spin;
+            p.x += Math.sin(frame * p.wobble) * 1.5;
+            ctx.save();
+            ctx.translate(p.x, p.y);
+            ctx.rotate(p.angle);
+            ctx.fillStyle = p.color;
+            ctx.fillRect(-p.r, -p.r/2, p.r*2, p.r);
+            ctx.restore();
+            if (p.y > canvas.height) { p.y = -20; p.x = Math.random() * canvas.width; }
+          });
+          frame++;
+          if (document.getElementById('celebration-overlay').classList.contains('visible'))
+            requestAnimationFrame(draw);
+        }
+        draw();
       }
 
     </script>
