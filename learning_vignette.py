@@ -622,7 +622,7 @@ elif st.session_state.page == "sudoku":
         cursor: text;
       }
       /* feedback states */
-      .cell.correct { background: #C8F0D0 !important; animation: flashGreen 0.5s ease; }
+      .cell.correct { background: #C8F0D0; animation: flashGreen 0.5s ease; }
       .cell.wrong   { background: #FFD0CC !important; }
       @keyframes flashGreen {
         0%   { background: #7BE89A; }
@@ -893,6 +893,16 @@ elif st.session_state.page == "sudoku":
                 const correct = parseInt(inp.value) === solution[r][c];
                 cell.classList.toggle('correct', correct);
                 cell.classList.toggle('wrong',   !correct);
+                if (correct) {
+                  // After flash, convert to a fixed-looking cell
+                  setTimeout(() => {
+                    cell.classList.remove('correct', 'empty');
+                    cell.classList.add('fixed');
+                    const span = document.createElement('span');
+                    span.textContent = inp.value;
+                    cell.replaceChild(span, inp);
+                  }, 600);
+                }
               }
               // Recalculate coaching hint after every input
               if (coachingActive) {
@@ -1237,7 +1247,7 @@ elif st.session_state.page == "sudoku":
           const r = parseInt(cell.dataset.row);
           const c = parseInt(cell.dataset.col);
           if (r === bestR && c === bestC) return;
-          if (cell.classList.contains('correct') || cell.classList.contains('wrong')) return;
+          if (cell.classList.contains('wrong')) return;
           if (board[r][c] === targetNum)                    cell.classList.add('coach-num');
           else if (usedRows.has(r) || usedCols.has(c))     cell.classList.add('coach-stripe');
         });
