@@ -888,7 +888,7 @@ elif st.session_state.page == "sudoku":
             { text: 'You are not alone in this. 🤝', italic: true },
             { text: 'Great nurses are made, not born — coaching makes the difference.' },
             { text: "Reach out to your mentor. That's exactly what they're there for. 💛", italic: true },
-            { text: 'Asking for guidance is not a weakness. It\'s wisdom.' },
+            { text: "Asking for guidance is not a weakness. It's wisdom." },
             { text: 'Every expert was once a beginner who kept asking questions.', italic: true },
           ]
         },
