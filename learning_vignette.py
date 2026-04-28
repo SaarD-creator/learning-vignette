@@ -630,20 +630,9 @@ elif st.session_state.page == "sudoku":
       }
 
       /* ---- Coaching highlights ---- */
-      .cell.coach-has {
-        background: #C4663A !important;
-        transition: background 0.5s;
-      }
-      .cell.coach-has input { color: white !important; }
       .cell.coach-stripe {
-        background: #F5DEC8 !important;
+        background: #FBBF7A !important;
         transition: background 0.5s;
-        opacity: 0.6;
-      }
-      .cell.coach-free {
-        background: #FEF08A !important;
-        transition: background 0.5s;
-        box-shadow: inset 0 0 0 2px #C4663A;
       }
 
       /* ---- Floating task icons ---- */
@@ -1006,7 +995,11 @@ elif st.session_state.page == "sudoku":
 
       function spawnCareCloud() {
         if (careIndex >= careData.length) return;
-        const {x, y} = randomPos();
+        const sudokuEl = document.getElementById('sudoku');
+        const rect = sudokuEl.getBoundingClientRect();
+        const cloudW = 120, cloudH = 80;
+        const x = rect.left + Math.random() * (rect.width  - cloudW);
+        const y = rect.top  + Math.random() * (rect.height - cloudH);
         const wrapper = document.createElement('div');
         wrapper.className = 'care-cloud';
         wrapper.style.left = x + 'px'; wrapper.style.top = y + 'px';
@@ -1112,55 +1105,71 @@ elif st.session_state.page == "sudoku":
         return board;
       }
 
-      function clearCoachHighlights() {
-        document.querySelectorAll('.cell.coach-has, .cell.coach-stripe, .cell.coach-free')
-          .forEach(el => el.classList.remove('coach-has', 'coach-stripe', 'coach-free'));
+      function getPossibles(board, r, c) {
+        if (board[r][c] !== 0) return [];
+        const used = new Set();
+        for (let i = 0; i < 9; i++) {
+          used.add(board[r][i]);
+          used.add(board[i][c]);
+        }
+        const br = Math.floor(r/3)*3, bc = Math.floor(c/3)*3;
+        for (let dr = 0; dr < 3; dr++)
+          for (let dc = 0; dc < 3; dc++)
+            used.add(board[br+dr][bc+dc]);
+        return [1,2,3,4,5,6,7,8,9].filter(v => !used.has(v));
       }
 
-      function highlightNumber(board, num) {
-        clearCoachHighlights();
-
-        // Find rows and cols where num already exists
-        const usedRows = new Set(), usedCols = new Set();
-        for (let r = 0; r < 9; r++)
-          for (let c = 0; c < 9; c++)
-            if (board[r][c] === num) { usedRows.add(r); usedCols.add(c); }
-
-        document.querySelectorAll('.cell').forEach(cell => {
-          const r = parseInt(cell.dataset.row);
-          const c = parseInt(cell.dataset.col);
-          if (board[r][c] === num) {
-            cell.classList.add('coach-has');        // cell that contains the number
-          } else if (usedRows.has(r) || usedCols.has(c)) {
-            cell.classList.add('coach-stripe');     // row/col already has the number
-          } else {
-            cell.classList.add('coach-free');       // possible candidate cell
-          }
-        });
+      function clearCoachHighlights() {
+        document.querySelectorAll('.cell.coach-stripe')
+          .forEach(el => el.classList.remove('coach-stripe'));
       }
 
       function showNextHint() {
         if (!coachingActive) return;
+        clearCoachHighlights();
         const board = getCurrentBoard();
 
-        // Pick number with most placements (but not yet complete) — gives most info
-        let bestNum = -1, bestScore = -1;
-        for (let num = 1; num <= 9; num++) {
-          let count = 0;
-          for (let r = 0; r < 9; r++)
-            for (let c = 0; c < 9; c++)
-              if (board[r][c] === num) count++;
-          if (count > 0 && count < 9 && count > bestScore) {
-            bestScore = count;
-            bestNum = num;
+        // Find empty cell with fewest possibilities (easiest to solve)
+        let bestR = -1, bestC = -1, bestCount = 10;
+        for (let r = 0; r < 9; r++) {
+          for (let c = 0; c < 9; c++) {
+            if (board[r][c] === 0) {
+              const poss = getPossibles(board, r, c);
+              if (poss.length > 0 && poss.length < bestCount) {
+                bestCount = poss.length;
+                bestR = r; bestC = c;
+              }
+            }
           }
         }
 
-        if (bestNum === -1) { clearCoachHighlights(); return; } // puzzle complete
+        if (bestR === -1) { clearCoachHighlights(); return; }
 
-        highlightNumber(board, bestNum);
+        // The correct answer for that cell
+        const targetNum = solution[bestR][bestC];
 
-        // Rotate to next number after 10s
+        // Highlight ALL rows and columns where targetNum already appears
+        // (do NOT highlight the target cell itself)
+        const highlightRows = new Set();
+        const highlightCols = new Set();
+        for (let r = 0; r < 9; r++)
+          for (let c = 0; c < 9; c++)
+            if (board[r][c] === targetNum) {
+              highlightRows.add(r);
+              highlightCols.add(c);
+            }
+
+        document.querySelectorAll('.cell').forEach(cell => {
+          const r = parseInt(cell.dataset.row);
+          const c = parseInt(cell.dataset.col);
+          // Skip the target cell itself
+          if (r === bestR && c === bestC) return;
+          if (highlightRows.has(r) || highlightCols.has(c)) {
+            cell.classList.add('coach-stripe');
+          }
+        });
+
+        // Refresh hint every 10s (re-evaluates board state)
         coachHintTimeout = setTimeout(showNextHint, 10000);
       }
 
