@@ -916,6 +916,96 @@ elif st.session_state.page == "sudoku":
       #confetti-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 501; width:100%; height:100%; }
       #celebration-msg { position: relative; z-index: 502; max-width: 420px; padding: 2rem; }
 
+      /* ---- CARE info overlay ---- */
+      #care-info-overlay {
+        display: none; position: fixed; inset: 0; z-index: 600;
+        background: linear-gradient(160deg,#FDF6EE 0%,#FAE8D4 100%);
+        overflow-y: auto;
+      }
+      #care-info-overlay.visible { display: block; }
+      #care-info-inner { max-width: 600px; margin: 0 auto; padding: 1.5rem 1.5rem 3rem; }
+      .care-info-back {
+        background: none; border: none; color: #C4663A; font-family: 'Crimson Text', serif;
+        font-size: 1rem; cursor: pointer; padding: 0.3rem 0; margin-bottom: 1rem;
+        display: block;
+      }
+      .care-info-back:hover { text-decoration: underline; }
+      .care-info-hero { text-align: center; margin-bottom: 1.5rem; }
+      .care-info-title {
+        font-family: 'Playfair Display', serif; font-weight: 900;
+        font-size: 2rem; color: #6B3A2A; line-height: 1.2; margin-bottom: 0.8rem;
+      }
+      .care-info-intro {
+        font-family: 'Crimson Text', serif; font-style: italic;
+        font-size: 1.05rem; color: #A0624A; line-height: 1.7;
+      }
+      .care-info-context {
+        background: white; border-radius: 12px; padding: 1rem 1.2rem;
+        margin-bottom: 1.2rem; font-family: 'Crimson Text', serif;
+        font-size: 1rem; color: #6B3A2A; line-height: 1.65;
+        box-shadow: 0 2px 10px rgba(196,102,58,0.08);
+      }
+      /* Accordion */
+      .care-accordion { margin-bottom: 1.2rem; }
+      .care-acc-item {
+        background: white; border-radius: 12px; margin-bottom: 0.6rem;
+        box-shadow: 0 2px 10px rgba(196,102,58,0.08);
+        border-left: 4px solid #E07B50; overflow: hidden; cursor: pointer;
+      }
+      .care-acc-header {
+        display: flex; align-items: center; gap: 0.8rem;
+        padding: 0.9rem 1.1rem;
+      }
+      .care-acc-badge {
+        font-family: 'Playfair Display', serif; font-weight: 900;
+        font-size: 1.4rem; color: #C4663A; min-width: 1.6rem;
+      }
+      .care-acc-title {
+        font-family: 'Playfair Display', serif; font-weight: 700;
+        font-size: 1rem; color: #6B3A2A; flex: 1;
+      }
+      .care-acc-arrow { color: #C4663A; font-size: 1.1rem; transition: transform 0.3s; }
+      .care-acc-item.open .care-acc-arrow { transform: rotate(180deg); }
+      .care-acc-body {
+        max-height: 0; overflow: hidden; transition: max-height 0.4s ease, padding 0.3s;
+        padding: 0 1.1rem; font-family: 'Crimson Text', serif;
+        font-size: 0.97rem; color: #8B4A30; line-height: 1.65;
+      }
+      .care-acc-body p { margin-bottom: 0.6rem; }
+      .care-acc-item.open .care-acc-body { max-height: 400px; padding: 0 1.1rem 1rem; }
+      .care-acc-tag {
+        display: inline-block; background: #FDE8D0; color: #C4663A;
+        font-size: 0.82rem; font-family: 'Crimson Text', serif; font-style: italic;
+        border-radius: 20px; padding: 0.25rem 0.8rem; margin-top: 0.4rem;
+      }
+      /* HRM section */
+      .care-info-hrm {
+        background: #6B3A2A; color: white; border-radius: 12px;
+        padding: 1.2rem 1.4rem; margin-bottom: 1.2rem;
+      }
+      .care-info-hrm-title {
+        font-family: 'Playfair Display', serif; font-weight: 900;
+        font-size: 1.2rem; margin-bottom: 0.6rem;
+      }
+      .care-info-hrm p {
+        font-family: 'Crimson Text', serif; font-size: 0.97rem;
+        line-height: 1.65; opacity: 0.9; margin-bottom: 0.8rem;
+      }
+      .care-hrm-grid {
+        display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;
+      }
+      .care-hrm-pill {
+        background: rgba(255,255,255,0.12); border-radius: 8px;
+        padding: 0.45rem 0.7rem; font-family: 'Crimson Text', serif;
+        font-size: 0.88rem; text-align: center;
+      }
+      /* Conclusion */
+      .care-info-conclusion {
+        background: #FDE8D0; border-radius: 12px; padding: 1rem 1.2rem;
+        font-family: 'Crimson Text', serif; font-size: 1rem;
+        color: #6B3A2A; line-height: 1.7; text-align: center;
+      }
+
       #to-summary-btn {
         margin-top: 1.4rem;
         padding: 0.7rem 2.2rem;
@@ -1045,7 +1135,7 @@ elif st.session_state.page == "sudoku":
         <p style="font-family:'Crimson Text',serif;font-style:italic;font-size:1.1rem;color:#A0624A;line-height:1.7;margin-bottom:2rem;">Thank you for your attention.</p>
         <div id="final-buttons">
           <button class="final-btn primary" onclick="showFinishSudoku()">Finish your Sudoku</button>
-          <button class="final-btn ghost" onclick="">Read more about the CARE start program</button>
+          <button class="final-btn ghost" onclick="showCareInfo()">Read more about the CARE start program</button>
           <button class="final-btn ghost" onclick="window.parent.location.reload()">Go back to the beginning</button>
         </div>
         <div id="finish-sudoku-choice" style="display:none;margin-top:1.5rem;">
@@ -1064,6 +1154,92 @@ elif st.session_state.page == "sudoku":
         <div style="font-family:'Playfair Display',serif;font-weight:900;font-size:2rem;color:#6B3A2A;margin-bottom:0.5rem;">Puzzle complete!</div>
         <p style="font-family:'Crimson Text',serif;font-style:italic;font-size:1.15rem;color:#A0624A;margin-bottom:1.5rem;">You finished the sudoku. Well done!</p>
         <button class="final-btn primary" onclick="hideCelebration()">Continue</button>
+      </div>
+    </div>
+
+    <!-- CARE info overlay -->
+    <div id="care-info-overlay">
+      <div id="care-info-inner">
+        <button class="care-info-back" onclick="hideCareInfo()">← Back</button>
+        <div class="care-info-hero">
+          <div class="care-info-title">The CARE START Program</div>
+          <p class="care-info-intro">A strategic HRM approach to reducing early turnover in healthcare — built around four pillars that transform the first working year from a survival phase into a sustainable growth phase.</p>
+        </div>
+
+        <div class="care-info-context">
+          <p>High early turnover in healthcare is often caused by <strong>transition shock</strong>: the gap between expectations and workplace reality. The CARE START Program responds to this through four integrated elements.</p>
+        </div>
+
+        <div class="care-accordion">
+          <div class="care-acc-item" onclick="toggleAcc(this)">
+            <div class="care-acc-header">
+              <span class="care-acc-badge">C</span>
+              <span class="care-acc-title">Coaching &amp; Mentorship</span>
+              <span class="care-acc-arrow">▾</span>
+            </div>
+            <div class="care-acc-body">
+              <p>Each new employee is assigned a dedicated, experienced colleague as a mentor — providing not only technical support, but also social and emotional guidance.</p>
+              <p>Regular check-ins during the first months ensure newcomers can ask questions, discuss uncertainties, and feel less isolated. For HR, this means carefully selecting and training mentors, and allocating sufficient time for the role.</p>
+              <div class="care-acc-tag">HR role: select &amp; train mentors, allocate resources</div>
+            </div>
+          </div>
+
+          <div class="care-acc-item" onclick="toggleAcc(this)">
+            <div class="care-acc-header">
+              <span class="care-acc-badge">A</span>
+              <span class="care-acc-title">Adaptation Support &amp; Onboarding</span>
+              <span class="care-acc-arrow">▾</span>
+            </div>
+            <div class="care-acc-body">
+              <p>Instead of a short introductory period, the program offers a <strong>phased entry</strong> where new employees gradually take on more responsibility.</p>
+              <p>Realistic job previews and simulations before the start date help align expectations with reality, reducing early disappointment and stress. HR designs longer onboarding trajectories in close collaboration with supervisors and teams.</p>
+              <div class="care-acc-tag">HR role: design phased onboarding, create realistic previews</div>
+            </div>
+          </div>
+
+          <div class="care-acc-item" onclick="toggleAcc(this)">
+            <div class="care-acc-header">
+              <span class="care-acc-badge">R</span>
+              <span class="care-acc-title">Resilience Training</span>
+              <span class="care-acc-arrow">▾</span>
+            </div>
+            <div class="care-acc-body">
+              <p>The high emotional and mental workload of healthcare makes resilience-building essential. The program includes training on stress management, coping with demanding situations, and building self-confidence.</p>
+              <p>Structured debriefings and access to psychological support help employees process difficult experiences. Crucially, this support is offered <strong>preventively</strong> — not only when problems arise.</p>
+              <div class="care-acc-tag">HR role: embed resilience in well-being policy, offer proactive support</div>
+            </div>
+          </div>
+
+          <div class="care-acc-item" onclick="toggleAcc(this)">
+            <div class="care-acc-header">
+              <span class="care-acc-badge">E</span>
+              <span class="care-acc-title">Early Feedback</span>
+              <span class="care-acc-arrow">▾</span>
+            </div>
+            <div class="care-acc-body">
+              <p>Systematic feedback collection through check-ins, short surveys, and individual conversations allows early identification of dissatisfaction, overload, or uncertainty.</p>
+              <p>Based on this information, HR can intervene in a targeted way — preventing problems from escalating into turnover.</p>
+              <div class="care-acc-tag">HR role: monitor signals, intervene early, track retention rates</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="care-info-hrm">
+          <div class="care-info-hrm-title">The Strategic Role of HRM</div>
+          <p>The CARE START Program shifts HRM from a <em>reactive</em> stance (exit interviews) to a <em>proactive</em> one — managing retention actively from day one.</p>
+          <div class="care-hrm-grid">
+            <div class="care-hrm-pill">Design &amp; implement the program</div>
+            <div class="care-hrm-pill">Train mentors &amp; supervisors</div>
+            <div class="care-hrm-pill">Monitor feedback &amp; retention</div>
+            <div class="care-hrm-pill">Integrate well-being into policy</div>
+          </div>
+        </div>
+
+        <div class="care-info-conclusion">
+          <p>High turnover during the first year is not inevitable. By focusing on guidance, realistic expectations, mental support, and early follow-up, HRM can significantly improve the transition — transforming the first working year from a <strong>survival phase</strong> into a <strong>sustainable growth phase</strong>.</p>
+        </div>
+
+        <button class="final-btn primary" style="margin:1.5rem auto 2rem;" onclick="hideCareInfo()">Close</button>
       </div>
     </div>
 
@@ -1623,6 +1799,9 @@ elif st.session_state.page == "sudoku":
       function showFinalPage() {
         document.getElementById('care-e-overlay').classList.remove('visible');
         document.getElementById('end-overlay').classList.remove('visible');
+        // Reset coaching choice state
+        document.getElementById('final-buttons').style.display = 'block';
+        document.getElementById('finish-sudoku-choice').style.display = 'none';
         document.getElementById('final-overlay').classList.add('visible');
       }
 
@@ -1635,15 +1814,27 @@ elif st.session_state.page == "sudoku":
         document.getElementById('final-overlay').classList.remove('visible');
         document.getElementById('end-overlay').classList.remove('visible');
         document.getElementById('care-e-overlay').classList.remove('visible');
-        // Re-enable all empty inputs
         document.querySelectorAll('.cell.empty input').forEach(inp => { inp.disabled = false; });
         timerPaused = true;
         coachingActive = false;
         clearCoachHighlights();
-        if (withCoaching) {
-          coachingActive = true;
-          showNextHint();
-        }
+        if (withCoaching) { coachingActive = true; showNextHint(); }
+      }
+
+      function showCareInfo() {
+        document.getElementById('care-info-overlay').classList.add('visible');
+        document.getElementById('care-info-inner').scrollTop = 0;
+        document.getElementById('care-info-overlay').scrollTop = 0;
+      }
+
+      function hideCareInfo() {
+        document.getElementById('care-info-overlay').classList.remove('visible');
+      }
+
+      function toggleAcc(item) {
+        const isOpen = item.classList.contains('open');
+        document.querySelectorAll('.care-acc-item.open').forEach(el => el.classList.remove('open'));
+        if (!isOpen) item.classList.add('open');
       }
 
       // =============================================
