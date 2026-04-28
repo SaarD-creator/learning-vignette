@@ -622,8 +622,8 @@ elif st.session_state.page == "sudoku":
         cursor: text;
       }
       /* feedback states */
-      .cell.correct { background: #C8F0D0; animation: flashGreen 0.5s ease; }
-      .cell.wrong   { background: #FFD0CC; }
+      .cell.correct { background: #C8F0D0 !important; animation: flashGreen 0.5s ease; }
+      .cell.wrong   { background: #FFD0CC !important; }
       @keyframes flashGreen {
         0%   { background: #7BE89A; }
         100% { background: #C8F0D0; }
@@ -1236,9 +1236,10 @@ elif st.session_state.page == "sudoku":
         document.querySelectorAll('.cell').forEach(cell => {
           const r = parseInt(cell.dataset.row);
           const c = parseInt(cell.dataset.col);
-          if (r === bestR && c === bestC) return; // target cell: no highlight
-          if (board[r][c] === targetNum)          cell.classList.add('coach-num');
-          else if (usedRows.has(r) || usedCols.has(c)) cell.classList.add('coach-stripe');
+          if (r === bestR && c === bestC) return;
+          if (cell.classList.contains('correct') || cell.classList.contains('wrong')) return;
+          if (board[r][c] === targetNum)                    cell.classList.add('coach-num');
+          else if (usedRows.has(r) || usedCols.has(c))     cell.classList.add('coach-stripe');
         });
 
         drawBoxOutline(boxR, boxC);
