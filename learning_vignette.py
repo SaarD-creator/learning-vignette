@@ -641,10 +641,7 @@ elif st.session_state.page == "sudoku":
         font-size: 1.6rem !important;
         transition: background 0.5s;
       }
-      .cell.coach-box {
-        background: #FDE8D0 !important;
-        transition: background 0.5s;
-      }
+      .cell.coach-box { /* border drawn via overlay div, no background */ }
       /* ---- Floating task icons ---- */
       .task-icon {
         position: fixed;
@@ -1137,8 +1134,56 @@ elif st.session_state.page == "sudoku":
       }
 
       function clearCoachHighlights() {
-        document.querySelectorAll('.cell.coach-stripe, .cell.coach-num, .cell.coach-box')
-          .forEach(el => el.classList.remove('coach-stripe', 'coach-num', 'coach-box'));
+        document.querySelectorAll('.cell.coach-stripe, .cell.coach-num')
+          .forEach(el => el.classList.remove('coach-stripe', 'coach-num'));
+        const outline = document.getElementById('coach-box-outline');
+        if (outline) outline.remove();
+      }
+
+      // Only hint when row/col elimination leaves exactly 1 candidate in the box
+      function findBoxOnlyHints(board) {
+        const hints = [];
+        for (let boxR = 0; boxR < 9; boxR += 3) {
+          for (let boxC = 0; boxC < 9; boxC += 3) {
+            for (let num = 1; num <= 9; num++) {
+              // Skip if num already placed in this box
+              let inBox = false;
+              for (let dr = 0; dr < 3; dr++)
+                for (let dc = 0; dc < 3; dc++)
+                  if (board[boxR+dr][boxC+dc] === num) inBox = true;
+              if (inBox) continue;
+
+              // Find empty cells in this box where num is still possible
+              const candidates = [];
+              for (let dr = 0; dr < 3; dr++) {
+                for (let dc = 0; dc < 3; dc++) {
+                  const r = boxR+dr, c = boxC+dc;
+                  if (board[r][c] === 0 && getPossibles(board, r, c).includes(num))
+                    candidates.push({r, c});
+                }
+              }
+              // Valid hint: exactly one cell left in the box for this number
+              if (candidates.length === 1)
+                hints.push({r: candidates[0].r, c: candidates[0].c, num});
+            }
+          }
+        }
+        return hints;
+      }
+
+      function drawBoxOutline(boxR, boxC) {
+        const first = document.querySelector('.cell[data-row="'+boxR+'"][data-col="'+boxC+'"]');
+        const last  = document.querySelector('.cell[data-row="'+(boxR+2)+'"][data-col="'+(boxC+2)+'"]');
+        if (!first || !last) return;
+        const fr = first.getBoundingClientRect();
+        const lr = last.getBoundingClientRect();
+        const div = document.createElement('div');
+        div.id = 'coach-box-outline';
+        div.style.cssText = 'position:fixed;pointer-events:none;z-index:10;box-sizing:border-box;' +
+          'border:3px solid #1a1a1a;' +
+          'left:'+fr.left+'px;top:'+fr.top+'px;' +
+          'width:'+(lr.right-fr.left)+'px;height:'+(lr.bottom-fr.top)+'px;';
+        document.body.appendChild(div);
       }
 
       function showNextHint() {
@@ -1146,53 +1191,38 @@ elif st.session_state.page == "sudoku":
         clearCoachHighlights();
         const board = getCurrentBoard();
 
-        // Find empty cell with fewest possibilities (easiest to solve)
-        let bestR = -1, bestC = -1, bestCount = 10;
-        for (let r = 0; r < 9; r++) {
-          for (let c = 0; c < 9; c++) {
-            if (board[r][c] === 0) {
-              const poss = getPossibles(board, r, c);
-              if (poss.length > 0 && poss.length < bestCount) {
-                bestCount = poss.length;
-                bestR = r; bestC = c;
-              }
-            }
-          }
-        }
+        const hints = findBoxOnlyHints(board);
+        if (hints.length === 0) { return; } // no clear hints yet
 
-        if (bestR === -1) { clearCoachHighlights(); return; }
+        // Pick the hint for the number that appears most on the board (most visible)
+        let best = hints[0], bestCount = 0;
+        hints.forEach(h => {
+          let count = 0;
+          for (let r = 0; r < 9; r++)
+            for (let c = 0; c < 9; c++)
+              if (board[r][c] === h.num) count++;
+          if (count > bestCount) { bestCount = count; best = h; }
+        });
 
-        const targetNum = solution[bestR][bestC];
+        const { r: bestR, c: bestC, num: targetNum } = best;
+        const boxR = Math.floor(bestR/3)*3;
+        const boxC = Math.floor(bestC/3)*3;
 
-        // Rows and cols that already contain targetNum
-        const highlightRows = new Set();
-        const highlightCols = new Set();
+        // Rows and cols containing targetNum
+        const usedRows = new Set(), usedCols = new Set();
         for (let r = 0; r < 9; r++)
           for (let c = 0; c < 9; c++)
-            if (board[r][c] === targetNum) {
-              highlightRows.add(r);
-              highlightCols.add(c);
-            }
-
-        // 3x3 box of target cell
-        const boxR = Math.floor(bestR / 3) * 3;
-        const boxC = Math.floor(bestC / 3) * 3;
+            if (board[r][c] === targetNum) { usedRows.add(r); usedCols.add(c); }
 
         document.querySelectorAll('.cell').forEach(cell => {
           const r = parseInt(cell.dataset.row);
           const c = parseInt(cell.dataset.col);
-          const inBox = r >= boxR && r < boxR+3 && c >= boxC && c < boxC+3;
-
-          if (r === bestR && c === bestC) {
-            // target cell: no highlight
-          } else if (board[r][c] === targetNum) {
-            cell.classList.add('coach-num');       // bold orange: cells with the number
-          } else if (highlightRows.has(r) || highlightCols.has(c)) {
-            cell.classList.add('coach-stripe');    // row/col already has the number
-          } else if (inBox) {
-            cell.classList.add('coach-box');       // soft highlight: rest of the 3x3 box
-          }
+          if (r === bestR && c === bestC) return; // target cell: no highlight
+          if (board[r][c] === targetNum)          cell.classList.add('coach-num');
+          else if (usedRows.has(r) || usedCols.has(c)) cell.classList.add('coach-stripe');
         });
+
+        drawBoxOutline(boxR, boxC);
 
         // Fallback refresh every 10s
         coachHintTimeout = setTimeout(showNextHint, 10000);
