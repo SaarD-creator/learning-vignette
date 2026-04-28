@@ -629,6 +629,20 @@ elif st.session_state.page == "sudoku":
         100% { background: #C8F0D0; }
       }
 
+      /* ---- Coaching highlights ---- */
+      .cell.coach-row { background: #FEE9C4 !important; transition: background 0.5s; }
+      .cell.coach-col { background: #FEE9C4 !important; transition: background 0.5s; }
+      .cell.coach-target {
+        background: #E07B50 !important;
+        transition: background 0.5s;
+        animation: coachPulse 1s ease-in-out infinite alternate;
+      }
+      .cell.coach-target input { color: white !important; }
+      @keyframes coachPulse {
+        from { background: #E07B50 !important; }
+        to   { background: #C4663A !important; }
+      }
+
       /* ---- Floating task icons ---- */
       .task-icon {
         position: fixed;
@@ -1053,8 +1067,12 @@ elif st.session_state.page == "sudoku":
           careIndex++;
           // Schedule cloud C after 15s
           nextCareId = setTimeout(spawnCareCloud, 15000);
+        } else if (careIndex === 2) {
+          // After cloud C: start coaching mode
+          careIndex++;
+          startCoaching();
         } else {
-          // After cloud R or C: resume/unfreeze icons, schedule next cloud
+          // After cloud R: resume icons, schedule next cloud
           activeIcons.forEach((entry, el) => {
             el.style.animationPlayState = '';
             const remaining = Math.max(entry.remaining || 1000, 500);
@@ -1066,6 +1084,86 @@ elif st.session_state.page == "sudoku":
           }
           scheduleNext();
         }
+      }
+
+      // =============================================
+      // COACHING: highlight helpful rows/columns
+      // =============================================
+      let coachingActive = false;
+      let coachHintTimeout = null;
+
+      function startCoaching() {
+        coachingActive = true;
+        showNextHint();
+      }
+
+      function getCurrentBoard() {
+        const board = puzzle.map(row => [...row]);
+        document.querySelectorAll('.cell.empty input').forEach(inp => {
+          const cell = inp.parentElement;
+          const r = parseInt(cell.dataset.row);
+          const c = parseInt(cell.dataset.col);
+          const v = parseInt(inp.value);
+          if (v >= 1 && v <= 9) board[r][c] = v;
+        });
+        return board;
+      }
+
+      function getPossibles(board, r, c) {
+        if (board[r][c] !== 0) return [];
+        const used = new Set();
+        for (let i = 0; i < 9; i++) {
+          used.add(board[r][i]);
+          used.add(board[i][c]);
+        }
+        const br = Math.floor(r/3)*3, bc = Math.floor(c/3)*3;
+        for (let dr = 0; dr < 3; dr++)
+          for (let dc = 0; dc < 3; dc++)
+            used.add(board[br+dr][bc+dc]);
+        return [1,2,3,4,5,6,7,8,9].filter(v => !used.has(v));
+      }
+
+      function clearCoachHighlights() {
+        document.querySelectorAll('.cell.coach-row, .cell.coach-col, .cell.coach-target')
+          .forEach(el => el.classList.remove('coach-row', 'coach-col', 'coach-target'));
+      }
+
+      function highlightHint(row, col) {
+        clearCoachHighlights();
+        document.querySelectorAll('.cell').forEach(cell => {
+          const r = parseInt(cell.dataset.row);
+          const c = parseInt(cell.dataset.col);
+          if (r === row && c === col)      cell.classList.add('coach-target');
+          else if (r === row)              cell.classList.add('coach-row');
+          else if (c === col)              cell.classList.add('coach-col');
+        });
+        // Fade out after 4s, then show next hint after 7s
+        setTimeout(clearCoachHighlights, 4000);
+      }
+
+      function showNextHint() {
+        if (!coachingActive) return;
+        const board = getCurrentBoard();
+
+        // Find empty cell with fewest possibilities (easiest to solve)
+        let bestR = -1, bestC = -1, bestCount = 10;
+        for (let r = 0; r < 9; r++) {
+          for (let c = 0; c < 9; c++) {
+            if (board[r][c] === 0) {
+              const poss = getPossibles(board, r, c);
+              if (poss.length > 0 && poss.length < bestCount) {
+                bestCount = poss.length;
+                bestR = r; bestC = c;
+              }
+            }
+          }
+        }
+
+        if (bestR === -1) return; // puzzle complete
+
+        highlightHint(bestR, bestC);
+        // Next hint after 7 seconds
+        coachHintTimeout = setTimeout(showNextHint, 7000);
       }
 
       // First icon spawn after 3s, first CARE cloud (R) after 20s
