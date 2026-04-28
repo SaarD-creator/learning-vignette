@@ -795,6 +795,38 @@ elif st.session_state.page == "sudoku":
       #resume-btn.show { animation: fadeIn 0.7s forwards; }
 
       @keyframes fadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+
+      /* ---- End-of-shift overlay ---- */
+      #end-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(253,232,208,0.97);
+        z-index: 200;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+        padding: 2rem 2rem 1.5rem;
+        overflow-y: auto;
+        text-align: center;
+        animation: fadeIn 0.6s ease forwards;
+      }
+      #end-overlay.visible { display: flex; }
+      .end-shift-icon { font-size: 3rem; margin-bottom: 0.5rem; }
+      .end-subtitle {
+        font-family: 'Crimson Text', serif;
+        font-style: italic;
+        font-size: 1.05rem;
+        color: #A0624A;
+        margin-bottom: 1.2rem;
+      }
+      .care-divider {
+        width: 60px; height: 3px;
+        background: linear-gradient(90deg, #C4663A, #E07B50);
+        border-radius: 2px;
+        margin: 0.8rem auto 1.2rem;
+      }
+      #care-e-messages .message { max-width: 480px; }
     </style>
 
     <h1>Solve this Sudoku</h1>
@@ -813,6 +845,18 @@ elif st.session_state.page == "sudoku":
       <div class="resilience-title" id="overlay-title"></div>
       <div id="overlay-messages"></div>
       <button id="resume-btn">▶ Continue</button>
+    </div>
+
+    <!-- End-of-shift overlay -->
+    <div id="end-overlay">
+      <div class="end-shift-icon">🏥</div>
+      <div class="resilience-title" id="end-title">Your shift is over.</div>
+      <p class="end-subtitle" id="end-subtitle">Time to reflect on how it went.</p>
+      <div id="care-e-wrap" style="display:none;">
+        <div class="care-divider"></div>
+        <div class="resilience-title" style="font-size:1.4rem; margin-bottom:0.8rem;">E — Early Feedback</div>
+        <div id="care-e-messages"></div>
+      </div>
     </div>
 
     <script>
@@ -836,6 +880,7 @@ elif st.session_state.page == "sudoku":
         if (timerPaused || timerSeconds <= 0) return;
         timerSeconds--;
         updateTimerDisplay();
+        if (timerSeconds === 0) endGame();
       }, 1000);
 
       // =============================================
@@ -1275,5 +1320,84 @@ elif st.session_state.page == "sudoku":
       // First icon spawn after 3s, first CARE cloud (R) after 20s
       setTimeout(doSpawn, 3000);
       nextCareId = setTimeout(spawnCareCloud, 20000);
+      // =============================================
+      // END OF SHIFT
+      // =============================================
+      function endGame() {
+        // Stop everything
+        paused = true;
+        timerPaused = true;
+        iconsActive = false;
+        clearTimeout(nextSpawnId);
+        clearTimeout(nextCareId);
+        clearTimeout(coachHintTimeout);
+        clearCoachHighlights();
+
+        // Remove any lingering icons and clouds
+        document.querySelectorAll('.task-icon, .care-cloud, .sad-icon').forEach(el => el.remove());
+
+        // Disable all inputs
+        document.querySelectorAll('.cell.empty input').forEach(inp => inp.disabled = true);
+
+        // Show end overlay
+        document.getElementById('end-overlay').classList.add('visible');
+
+        // Calculate performance
+        const board = getCurrentBoard();
+        let total = 0, correct = 0, wrong = 0, empty = 0;
+        for (let r = 0; r < 9; r++) {
+          for (let c = 0; c < 9; c++) {
+            if (puzzle[r][c] === 0) {
+              total++;
+              if (board[r][c] === solution[r][c])      correct++;
+              else if (board[r][c] !== 0)              wrong++;
+              else                                     empty++;
+            }
+          }
+        }
+        const pct = Math.round((correct / total) * 100);
+
+        // Build personalised E — Early Feedback messages
+        const msgs = [];
+
+        if (pct === 100) {
+          msgs.push({ text: 'Excellent work — you solved the entire puzzle correctly! 🌟', italic: true });
+          msgs.push({ text: 'That kind of focus and precision is exactly what great care looks like.' });
+        } else if (pct >= 60) {
+          msgs.push({ text: 'You filled in ' + correct + ' out of ' + total + ' cells correctly — a solid effort! 💛', italic: true });
+          msgs.push({ text: 'With ' + empty + ' cells still open, there is room to grow — and that is perfectly fine at this stage.' });
+        } else {
+          msgs.push({ text: 'You got ' + correct + ' out of ' + total + ' cells right this time.', italic: true });
+          msgs.push({ text: "Don't be discouraged — every attempt builds your ability to work under pressure." });
+        }
+
+        if (wrong > 0) {
+          msgs.push({ text: wrong + ' cell' + (wrong > 1 ? 's were' : ' was') + ' filled in incorrectly. Checking your work before moving on is a habit worth practising.' });
+        } else if (correct > 0) {
+          msgs.push({ text: 'No incorrect entries — your accuracy under time pressure is commendable. 🌿', italic: true });
+        }
+
+        if (coachingActive || careIndex >= 3) {
+          msgs.push({ text: 'You worked with coaching support in the final phase — using available guidance is a real professional strength.', italic: true });
+        }
+
+        msgs.push({ text: 'Early feedback like this helps you grow faster and feel more confident in your role. Keep going. 🌱' });
+
+        // Reveal E feedback after a short pause
+        setTimeout(() => {
+          const wrap = document.getElementById('care-e-wrap');
+          wrap.style.display = 'block';
+          const container = document.getElementById('care-e-messages');
+          const delays = [0.3, 1.1, 1.9, 2.7, 3.5];
+          msgs.forEach((m, i) => {
+            const div = document.createElement('div');
+            div.className = 'message' + (m.italic ? ' italic' : '');
+            div.textContent = m.text;
+            container.appendChild(div);
+            setTimeout(() => div.classList.add('show'), delays[i] * 1000);
+          });
+        }, 2000);
+      }
+
     </script>
     """, height=720, scrolling=False)
