@@ -106,32 +106,20 @@ if st.session_state.page == "vraag":
     if st.session_state.start_time_vraag is None:
         st.session_state.start_time_vraag = time.time()
 
-    elapsed  = time.time() - st.session_state.start_time_vraag
+    elapsed   = time.time() - st.session_state.start_time_vraag
     remaining = max(0, 30 - int(elapsed))
     time_up   = elapsed >= 30
 
-    # Auto-refresh every second while timer is running
+    # Auto-refresh every second while timer is running and not yet correct
     if not time_up and not st.session_state.feedback_given:
         st_autorefresh(interval=1000, key="vraag_refresh")
 
-    st.title("Learning vignette")
-    st.write(
-        "Welcome to the learning vignette of group 48. "
-        "Please start by answering the next question:"
-    )
-
-    # ---- Countdown display ----
+    # ---- Countdown bar at the very top ----
     if not st.session_state.feedback_given and not time_up:
         pct = remaining / 30
-        if remaining > 15:
-            bar_color = "#4CAF50"
-        elif remaining > 8:
-            bar_color = "#FF9800"
-        else:
-            bar_color = "#F44336"
-
+        bar_color = "#4CAF50" if remaining > 15 else ("#FF9800" if remaining > 8 else "#F44336")
         st.markdown(f"""
-            <div style="margin-bottom:0.5rem;">
+            <div style="margin-bottom:1rem;">
                 <div style="display:flex;justify-content:space-between;
                             font-size:0.85rem;color:#888;margin-bottom:4px;">
                     <span>Time remaining</span>
@@ -140,17 +128,23 @@ if st.session_state.page == "vraag":
                 <div style="background:#eee;border-radius:20px;height:8px;overflow:hidden;">
                     <div style="width:{int(pct*100)}%;height:100%;
                                 background:{bar_color};border-radius:20px;
-                                transition:width 0.5s ease;"></div>
+                                transition:width 0.8s ease;"></div>
                 </div>
             </div>
         """, unsafe_allow_html=True)
+
+    st.title("Learning vignette")
+    st.write(
+        "Welcome to the learning vignette of group 48. "
+        "Please start by answering the next question:"
+    )
 
     col1, col2 = st.columns([3, 1])
     with col1:
         waarde = st.number_input(
             "Which percentage of employees in the health sector quit within their first year?",
             min_value=0, max_value=100, step=1, format="%d",
-            disabled=time_up and not st.session_state.feedback_given
+            disabled=time_up or st.session_state.feedback_given
         )
     with col2:
         st.write("%")
@@ -160,30 +154,31 @@ if st.session_state.page == "vraag":
         st.session_state.feedback_given = True
         st.session_state.time_up_reveal = True
 
-    if st.session_state.get("time_up_reveal") and not st.button("Submit answer"):
+    if st.session_state.get("time_up_reveal"):
         st.info("⏱️ Time's up! The correct answer is **30.02%** — nearly 1 in 3 healthcare workers leaves within their first year.")
         st.button("Go to the next page", on_click=go_to_spel)
 
-    elif not st.session_state.get("time_up_reveal"):
-        if st.button("Submit answer") or (st.session_state.feedback_given and not time_up):
-            st.session_state.feedback_given = True
-            correct_of_dichtbij = False
-
+    elif not st.session_state.feedback_given:
+        # Still answering — show submit button
+        if st.button("Submit answer"):
             if 30 <= waarde <= 31:
                 st.success("Correct! Well done. The actual percentage is 30.02%.")
-                correct_of_dichtbij = True
+                st.session_state.feedback_given = True
+                st.button("Go to the next page", on_click=go_to_spel)
             elif 20 <= waarde <= 40:
                 st.info("You're close! The correct answer is 30.02%.")
-                correct_of_dichtbij = True
-            else:
-                st.error(
-                    "The actual percentage is **30.02%** — nearly 1 in 3 healthcare workers "
-                    "leaves within their first year."
-                )
-                correct_of_dichtbij = True  # always show next button
-
-            if correct_of_dichtbij:
+                st.session_state.feedback_given = True
                 st.button("Go to the next page", on_click=go_to_spel)
+            else:
+                st.error("Not quite — try again!")
+
+    else:
+        # Already answered correctly/close enough — show next button
+        if 30 <= waarde <= 31:
+            st.success("Correct! Well done. The actual percentage is 30.02%.")
+        else:
+            st.info("You're close! The correct answer is 30.02%.")
+        st.button("Go to the next page", on_click=go_to_spel)
 
 
 # ======================================================
