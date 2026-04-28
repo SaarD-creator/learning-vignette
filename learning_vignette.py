@@ -630,17 +630,20 @@ elif st.session_state.page == "sudoku":
       }
 
       /* ---- Coaching highlights ---- */
-      .cell.coach-row { background: #FEE9C4 !important; transition: background 0.5s; }
-      .cell.coach-col { background: #FEE9C4 !important; transition: background 0.5s; }
-      .cell.coach-target {
-        background: #E07B50 !important;
+      .cell.coach-has {
+        background: #C4663A !important;
         transition: background 0.5s;
-        animation: coachPulse 1s ease-in-out infinite alternate;
       }
-      .cell.coach-target input { color: white !important; }
-      @keyframes coachPulse {
-        from { background: #E07B50 !important; }
-        to   { background: #C4663A !important; }
+      .cell.coach-has input { color: white !important; }
+      .cell.coach-stripe {
+        background: #F5DEC8 !important;
+        transition: background 0.5s;
+        opacity: 0.6;
+      }
+      .cell.coach-free {
+        background: #FEF08A !important;
+        transition: background 0.5s;
+        box-shadow: inset 0 0 0 2px #C4663A;
       }
 
       /* ---- Floating task icons ---- */
@@ -1087,7 +1090,7 @@ elif st.session_state.page == "sudoku":
       }
 
       // =============================================
-      // COACHING: highlight helpful rows/columns
+      // COACHING: highlight by number
       // =============================================
       let coachingActive = false;
       let coachHintTimeout = null;
@@ -1109,61 +1112,56 @@ elif st.session_state.page == "sudoku":
         return board;
       }
 
-      function getPossibles(board, r, c) {
-        if (board[r][c] !== 0) return [];
-        const used = new Set();
-        for (let i = 0; i < 9; i++) {
-          used.add(board[r][i]);
-          used.add(board[i][c]);
-        }
-        const br = Math.floor(r/3)*3, bc = Math.floor(c/3)*3;
-        for (let dr = 0; dr < 3; dr++)
-          for (let dc = 0; dc < 3; dc++)
-            used.add(board[br+dr][bc+dc]);
-        return [1,2,3,4,5,6,7,8,9].filter(v => !used.has(v));
-      }
-
       function clearCoachHighlights() {
-        document.querySelectorAll('.cell.coach-row, .cell.coach-col, .cell.coach-target')
-          .forEach(el => el.classList.remove('coach-row', 'coach-col', 'coach-target'));
+        document.querySelectorAll('.cell.coach-has, .cell.coach-stripe, .cell.coach-free')
+          .forEach(el => el.classList.remove('coach-has', 'coach-stripe', 'coach-free'));
       }
 
-      function highlightHint(row, col) {
+      function highlightNumber(board, num) {
         clearCoachHighlights();
+
+        // Find rows and cols where num already exists
+        const usedRows = new Set(), usedCols = new Set();
+        for (let r = 0; r < 9; r++)
+          for (let c = 0; c < 9; c++)
+            if (board[r][c] === num) { usedRows.add(r); usedCols.add(c); }
+
         document.querySelectorAll('.cell').forEach(cell => {
           const r = parseInt(cell.dataset.row);
           const c = parseInt(cell.dataset.col);
-          if (r === row && c === col)      cell.classList.add('coach-target');
-          else if (r === row)              cell.classList.add('coach-row');
-          else if (c === col)              cell.classList.add('coach-col');
+          if (board[r][c] === num) {
+            cell.classList.add('coach-has');        // cell that contains the number
+          } else if (usedRows.has(r) || usedCols.has(c)) {
+            cell.classList.add('coach-stripe');     // row/col already has the number
+          } else {
+            cell.classList.add('coach-free');       // possible candidate cell
+          }
         });
-        // Fade out after 4s, then show next hint after 7s
-        setTimeout(clearCoachHighlights, 4000);
       }
 
       function showNextHint() {
         if (!coachingActive) return;
         const board = getCurrentBoard();
 
-        // Find empty cell with fewest possibilities (easiest to solve)
-        let bestR = -1, bestC = -1, bestCount = 10;
-        for (let r = 0; r < 9; r++) {
-          for (let c = 0; c < 9; c++) {
-            if (board[r][c] === 0) {
-              const poss = getPossibles(board, r, c);
-              if (poss.length > 0 && poss.length < bestCount) {
-                bestCount = poss.length;
-                bestR = r; bestC = c;
-              }
-            }
+        // Pick number with most placements (but not yet complete) — gives most info
+        let bestNum = -1, bestScore = -1;
+        for (let num = 1; num <= 9; num++) {
+          let count = 0;
+          for (let r = 0; r < 9; r++)
+            for (let c = 0; c < 9; c++)
+              if (board[r][c] === num) count++;
+          if (count > 0 && count < 9 && count > bestScore) {
+            bestScore = count;
+            bestNum = num;
           }
         }
 
-        if (bestR === -1) return; // puzzle complete
+        if (bestNum === -1) { clearCoachHighlights(); return; } // puzzle complete
 
-        highlightHint(bestR, bestC);
-        // Next hint after 7 seconds
-        coachHintTimeout = setTimeout(showNextHint, 7000);
+        highlightNumber(board, bestNum);
+
+        // Rotate to next number after 10s
+        coachHintTimeout = setTimeout(showNextHint, 10000);
       }
 
       // First icon spawn after 3s, first CARE cloud (R) after 20s
