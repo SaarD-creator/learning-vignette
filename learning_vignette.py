@@ -880,35 +880,35 @@ elif st.session_state.page == "sudoku":
       // 3 CARE clouds: R first, then A (icons stop after), then C
       const careData = [
         {
-          title: 'R \u2014 Resilience Training',
+          title: 'R — Resilience Training',
           msgs: [
-            { id:'m1', text:'Take a deep breath. \uD83C\uDF3F', italic:true },
-            { id:'m2', text:'Every puzzle has a solution \u2014 just like every challenge in healthcare.' },
-            { id:'m3', text:'You are capable of more than you think. \uD83D\uDC9B', italic:true },
+            { id:'m1', text:'Take a deep breath. 🌿', italic:true },
+            { id:'m2', text:'Every puzzle has a solution — just like every challenge in healthcare.' },
+            { id:'m3', text:'You are capable of more than you think. 💛', italic:true },
             { id:'m4', text:'Stress narrows your focus. A moment of stillness opens it back up.' },
-            { id:'m5', text:"Resilience isn\u2019t about going faster \u2014 it\u2019s about going smarter.", italic:true },
+            { id:'m5', text:'Resilience is not about going faster — it is about going smarter.', italic:true },
             { id:'m6', text:'Just like in nursing: structured pauses and self-compassion make you stronger, not weaker.' },
-            { id:'m7', text:"You don\u2019t need to solve everything at once. \uD83C\uDF31", italic:true }
+            { id:'m7', text:'You do not need to solve everything at once. 🌱', italic:true }
           ]
         },
         {
-          title: 'A \u2014 Adaptation Support',
+          title: 'A — Adaptation Support',
           msgs: [
-            { id:'m1', text:'Adapting to a new role takes time \u2014 and that is perfectly normal.', italic:true },
+            { id:'m1', text:'Adapting to a new role takes time — and that is perfectly normal.', italic:true },
             { id:'m2', text:'You are not expected to know everything from day one.' },
-            { id:'m3', text:'Support is not a sign of weakness. It is how we grow together. \uD83D\uDC9B', italic:true },
+            { id:'m3', text:'Support is not a sign of weakness. It is how we grow together. 💛', italic:true },
             { id:'m4', text:'Lean on your team. Ask questions. Adapt at your own pace.' },
-            { id:'m5', text:'Every small step forward counts. \uD83C\uDF31', italic:true }
+            { id:'m5', text:'Every small step forward counts. 🌱', italic:true }
           ]
         },
         {
-          title: 'C \u2014 Coaching',
+          title: 'C — Coaching',
           msgs: [
-            { id:'m1', text:'A good coach can change everything. \uD83E\uDD1D', italic:true },
-            { id:'m2', text:'Coaching is not about fixing what is broken \u2014 it is about unlocking what is possible.' },
-            { id:'m3', text:'Share what you need. Your supervisor is there to support you. \uD83D\uDC9B', italic:true },
+            { id:'m1', text:'A good coach can change everything. 🤝', italic:true },
+            { id:'m2', text:'Coaching is not about fixing what is broken — it is about unlocking what is possible.' },
+            { id:'m3', text:'Share what you need. Your supervisor is there to support you. 💛', italic:true },
             { id:'m4', text:'You grow faster when you learn alongside someone who guides you.' },
-            { id:'m5', text:'Asking for help is not a step back. It is a step forward. \uD83C\uDF31', italic:true }
+            { id:'m5', text:'Asking for help is not a step back. It is a step forward. 🌱', italic:true }
           ]
         }
       ];
@@ -971,7 +971,7 @@ elif st.session_state.page == "sudoku":
         activeIcons.delete(el);
         const sad = document.createElement('div');
         sad.className = 'sad-icon';
-        sad.textContent = '\uD83D\uDE22';
+        sad.textContent = '😢';
         sad.style.left = el.style.left; sad.style.top = el.style.top;
         document.body.appendChild(sad);
         el.remove();
