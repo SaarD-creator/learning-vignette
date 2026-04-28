@@ -827,6 +827,18 @@ elif st.session_state.page == "sudoku":
         margin: 0.8rem auto 1.2rem;
       }
       #care-e-messages .message { max-width: 480px; }
+      #care-e-overlay {
+        display: none;
+        position: fixed; inset: 0; z-index: 300;
+        background: rgba(253,243,231,0.96);
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem;
+        text-align: center;
+        overflow-y: auto;
+      }
+      #care-e-overlay.visible { display: flex; }
       #end-care-cloud {
         position: relative;
         display: inline-block;
@@ -884,7 +896,7 @@ elif st.session_state.page == "sudoku":
       <button id="resume-btn">▶ Continue</button>
     </div>
 
-    <!-- End-of-shift overlay -->
+    <!-- End-of-shift overlay: shift done + cloud -->
     <div id="end-overlay">
       <div class="end-shift-icon">🏥</div>
       <div class="resilience-title">Your shift is done.</div>
@@ -895,12 +907,13 @@ elif st.session_state.page == "sudoku":
         </svg>
         <div class="cloud-label">CARE</div>
       </div>
-      <div id="care-e-wrap" style="display:none;">
-        <div class="care-divider"></div>
-        <div class="resilience-title" style="font-size:1.4rem; margin-bottom:0.8rem;">E — Early Feedback</div>
-        <div id="care-e-messages"></div>
-        <button id="finish-btn" style="display:none;" onclick="showFinalPage()">Finish</button>
-      </div>
+    </div>
+
+    <!-- E — Early Feedback overlay (same style as pause overlay) -->
+    <div id="care-e-overlay">
+      <div class="resilience-title">E — Early Feedback</div>
+      <div id="care-e-messages"></div>
+      <button id="finish-btn" style="display:none;" onclick="showFinalPage()">Finish</button>
     </div>
 
     <script>
@@ -1423,11 +1436,9 @@ elif st.session_state.page == "sudoku":
         }
         msgs.push({ text: 'Early feedback like this helps you grow faster and feel more confident in your role. Keep going. 🌱' });
 
-        // CARE cloud click reveals feedback
+        // CARE cloud click reveals E feedback overlay
         document.getElementById('end-care-cloud').addEventListener('click', function() {
-          this.style.display = 'none';
-          const wrap = document.getElementById('care-e-wrap');
-          wrap.style.display = 'block';
+          document.getElementById('care-e-overlay').classList.add('visible');
           const container = document.getElementById('care-e-messages');
           const delays = [0.3, 1.1, 1.9, 2.7, 3.5, 4.3];
           msgs.forEach((m, i) => {
@@ -1445,16 +1456,49 @@ elif st.session_state.page == "sudoku":
       }
 
       function showFinalPage() {
+        document.getElementById('care-e-overlay').classList.remove('visible');
         document.getElementById('end-overlay').classList.remove('visible');
-        document.getElementById('end-overlay').style.display = 'none';
-        document.body.innerHTML = '';
-        document.body.style.cssText = 'margin:0;display:flex;align-items:center;justify-content:center;min-height:100vh;background:linear-gradient(160deg,#FDF6EE 0%,#FAE8D4 100%);font-family:"Crimson Text",serif;text-align:center;padding:2rem;box-sizing:border-box;';
-        document.body.innerHTML = '<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Crimson+Text:ital,wght@0,400;1,400&display=swap" rel="stylesheet">' +
-          '<div style="max-width:500px;">' +
+
+        const btnStyle = 'display:block;width:100%;max-width:340px;margin:0.5rem auto;font-family:Playfair Display,serif;font-weight:700;font-size:1rem;border:none;border-radius:40px;padding:0.75rem 1.5rem;cursor:pointer;letter-spacing:0.04em;transition:transform 0.15s,box-shadow 0.15s;';
+        const primaryBtn = btnStyle + 'background:linear-gradient(135deg,#C4663A,#E07B50);color:white;box-shadow:0 4px 16px rgba(196,102,58,0.35);';
+        const ghostBtn   = btnStyle + 'background:transparent;color:#C4663A;border:2px solid #C4663A;';
+
+        document.body.innerHTML =
+          '<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Crimson+Text:ital,wght@0,400;1,400&display=swap" rel="stylesheet">' +
+          '<div id="final-page" style="margin:0;display:flex;align-items:center;justify-content:center;min-height:100vh;background:linear-gradient(160deg,#FDF6EE 0%,#FAE8D4 100%);padding:2rem;box-sizing:border-box;">' +
+          '<div style="max-width:500px;text-align:center;width:100%;">' +
           '<div style="font-size:2.5rem;margin-bottom:1rem;">🌿</div>' +
-          '<div style="font-family:Playfair Display,serif;font-weight:900;font-size:2rem;color:#6B3A2A;margin-bottom:1rem;line-height:1.2;">You reached the end of the learning vignette.</div>' +
-          '<p style="font-style:italic;font-size:1.15rem;color:#A0624A;line-height:1.7;">Thank you for your attention.</p>' +
-          '</div>';
+          '<div style="font-family:Playfair Display,serif;font-weight:900;font-size:1.9rem;color:#6B3A2A;margin-bottom:0.6rem;line-height:1.2;">You reached the end of the learning vignette.</div>' +
+          '<p style="font-family:Crimson Text,serif;font-style:italic;font-size:1.1rem;color:#A0624A;line-height:1.7;margin-bottom:2rem;">Thank you for your attention.</p>' +
+          '<div id="final-buttons">' +
+          '<button style="' + primaryBtn + '" onclick="showFinishSudoku()">Finish your Sudoku</button>' +
+          '<button style="' + ghostBtn + '" onclick="">Read more about the CARE start program</button>' +
+          '<button style="' + ghostBtn + '" onclick="window.parent.location.reload()">Go back to the beginning</button>' +
+          '</div>' +
+          '<div id="finish-sudoku-choice" style="display:none;margin-top:1.5rem;">' +
+          '<p style="font-family:Crimson Text,serif;font-style:italic;font-size:1rem;color:#A0624A;margin-bottom:1rem;">Would you like coaching support while finishing?</p>' +
+          '<button style="' + primaryBtn + 'max-width:240px;" onclick="goFinishSudoku(true)">Yes, with coaching</button>' +
+          '<button style="' + ghostBtn + 'max-width:240px;margin-top:0.4rem;" onclick="goFinishSudoku(false)">No, on my own</button>' +
+          '</div>' +
+          '</div></div>';
+      }
+
+      function showFinishSudoku() {
+        document.getElementById('final-buttons').style.display = 'none';
+        document.getElementById('finish-sudoku-choice').style.display = 'block';
+      }
+
+      function goFinishSudoku(withCoaching) {
+        // Re-show the sudoku overlay and re-enable inputs
+        document.body.innerHTML = document.body.innerHTML; // reset — actual impl would restore state
+        document.getElementById('end-overlay').classList.remove('visible');
+        document.getElementById('care-e-overlay').classList.remove('visible');
+        document.querySelectorAll('.cell.empty input').forEach(inp => inp.disabled = false);
+        timerPaused = true; // timer stays stopped
+        if (withCoaching) {
+          coachingActive = true;
+          showNextHint();
+        }
       }
 
     </script>
