@@ -641,7 +641,10 @@ elif st.session_state.page == "sudoku":
         font-size: 1.6rem !important;
         transition: background 0.5s;
       }
-
+      .cell.coach-box {
+        background: #FDE8D0 !important;
+        transition: background 0.5s;
+      }
       /* ---- Floating task icons ---- */
       .task-icon {
         position: fixed;
@@ -1134,8 +1137,8 @@ elif st.session_state.page == "sudoku":
       }
 
       function clearCoachHighlights() {
-        document.querySelectorAll('.cell.coach-stripe, .cell.coach-num')
-          .forEach(el => el.classList.remove('coach-stripe', 'coach-num'));
+        document.querySelectorAll('.cell.coach-stripe, .cell.coach-num, .cell.coach-box')
+          .forEach(el => el.classList.remove('coach-stripe', 'coach-num', 'coach-box'));
       }
 
       function showNextHint() {
@@ -1159,10 +1162,9 @@ elif st.session_state.page == "sudoku":
 
         if (bestR === -1) { clearCoachHighlights(); return; }
 
-        // The correct answer for that cell
         const targetNum = solution[bestR][bestC];
 
-        // Find which rows and cols already contain targetNum
+        // Rows and cols that already contain targetNum
         const highlightRows = new Set();
         const highlightCols = new Set();
         for (let r = 0; r < 9; r++)
@@ -1172,18 +1174,27 @@ elif st.session_state.page == "sudoku":
               highlightCols.add(c);
             }
 
+        // 3x3 box of target cell
+        const boxR = Math.floor(bestR / 3) * 3;
+        const boxC = Math.floor(bestC / 3) * 3;
+
         document.querySelectorAll('.cell').forEach(cell => {
           const r = parseInt(cell.dataset.row);
           const c = parseInt(cell.dataset.col);
-          if (r === bestR && c === bestC) return; // never highlight target cell
-          if (board[r][c] === targetNum) {
-            cell.classList.add('coach-num');       // bold: this cell contains the number
+          const inBox = r >= boxR && r < boxR+3 && c >= boxC && c < boxC+3;
+
+          if (r === bestR && c === bestC) {
+            // target cell: no highlight
+          } else if (board[r][c] === targetNum) {
+            cell.classList.add('coach-num');       // bold orange: cells with the number
           } else if (highlightRows.has(r) || highlightCols.has(c)) {
             cell.classList.add('coach-stripe');    // row/col already has the number
+          } else if (inBox) {
+            cell.classList.add('coach-box');       // soft highlight: rest of the 3x3 box
           }
         });
 
-        // Refresh every 10s as fallback
+        // Fallback refresh every 10s
         coachHintTimeout = setTimeout(showNextHint, 10000);
       }
 
