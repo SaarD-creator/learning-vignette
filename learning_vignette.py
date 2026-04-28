@@ -103,7 +103,7 @@ def go_to_spel():
 if st.session_state.page == "vraag":
 
     # Timer init
-    if "start_time_vraag" not in st.session_state:
+    if st.session_state.start_time_vraag is None:
         st.session_state.start_time_vraag = time.time()
 
     elapsed  = time.time() - st.session_state.start_time_vraag
