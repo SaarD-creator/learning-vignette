@@ -269,22 +269,15 @@ elif st.session_state.page == "info":
     step = elapsed // 3
 
     teksten = [
-        "30.2% of healthcare workers leave their job within the first year.",
-        "That means: nearly one in three new employees is gone… before they are fully trained.",
-        "And this is happening while the healthcare sector is already facing staff shortages.",
-        "We train people, we recruit them… yet we fail to retain them.",
-        "The core of the problem? Transition shock.",
-        "The gap between expectations… and reality.",
-        "New employees are immediately confronted with high workloads, intense emotions, and heavy responsibilities.",
-        "What should feel like a growth phase often feels like survival.",
-        "A lack of self-confidence plays a major role.",
-        "And without proper guidance, many feel left alone.",
-        "The result: people leave… and the pressure on those who remain increases.",
-        "A vicious cycle is created.",
-        "The problem is not inflow.",
-        "The problem is retention… in that first year.",
-        "If we truly want to make an impact, this is where we need to intervene.",
-        "And that is exactly what our solution focuses on."
+        "30.2% of healthcare workers leave their job within the first year — nearly one in three.",
+        "This happens while the sector is already facing serious staff shortages.",
+        "We recruit, we train… yet we fail to retain.",
+        "The core of the problem? Transition shock — the gap between expectations and reality.",
+        "From day one, new employees face high workloads, intense emotions, and heavy responsibilities.",
+        "Without confidence and guidance, what should feel like growth feels like survival.",
+        "People leave. Pressure on those who remain increases. A vicious cycle.",
+        "The problem is not inflow — it's retention in that first year.",
+        "And that is exactly where our solution intervenes."
     ]
 
     for i in range(min(step + 1, len(teksten))):
@@ -508,12 +501,33 @@ elif st.session_state.page == "care":
     """, height=340)
     # ---- Try it out button ----
     st.markdown("<br>", unsafe_allow_html=True)
+    st.markdown("""
+        <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+        <style>
+        div[data-testid="stButton"] > button {
+            font-family: 'Playfair Display', serif !important;
+            font-weight: 700 !important;
+            font-size: 1.1rem !important;
+            background: linear-gradient(135deg, #C4663A, #E07B50) !important;
+            color: white !important;
+            border: none !important;
+            border-radius: 40px !important;
+            padding: 0.75rem 2.5rem !important;
+            box-shadow: 0 4px 16px rgba(196,102,58,0.35) !important;
+            letter-spacing: 0.06em !important;
+            transition: transform 0.15s, box-shadow 0.15s !important;
+        }
+        div[data-testid="stButton"] > button:hover {
+            box-shadow: 0 6px 20px rgba(196,102,58,0.5) !important;
+            transform: scale(1.03) !important;
+        }
+        </style>
+    """, unsafe_allow_html=True)
     st.button(
-        "🎯 Try it out!",
+        "Try it out",
         on_click=lambda: st.session_state.update({"page": "sudoku"}),
         use_container_width=True
     )
-
 
 
 
@@ -537,208 +551,253 @@ elif st.session_state.page == "sudoku":
     components.html("""
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
     <style>
-      * { box-sizing:border-box; margin:0; padding:0; }
+      * { box-sizing: border-box; margin: 0; padding: 0; }
       body {
-        background:linear-gradient(135deg,#FDF3E7 0%,#FAE8D0 40%,#F5DEC8 100%);
-        display:flex; flex-direction:column; align-items:center;
-        padding:18px 16px 30px; font-family:'Crimson Text',serif;
-        min-height:100vh; overflow:hidden;
+        background: linear-gradient(135deg, #FDF3E7 0%, #FAE8D0 40%, #F5DEC8 100%);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 18px 16px 30px;
+        font-family: 'Crimson Text', serif;
+        min-height: 100vh;
+        overflow: hidden;
       }
-      h1 { font-family:'Playfair Display',serif; font-weight:900; font-size:2rem; color:#6B3A2A; text-align:center; margin-bottom:4px; }
-      .subtitle { font-family:'Crimson Text',serif; font-style:italic; font-size:1rem; color:#A0624A; text-align:center; margin-bottom:18px; }
 
-      #game-row { display:flex; flex-direction:row; align-items:flex-start; gap:24px; justify-content:center; }
+      h1 {
+        font-family: 'Playfair Display', serif;
+        font-weight: 900;
+        font-size: 2rem;
+        color: #6B3A2A;
+        text-align: center;
+        margin-bottom: 4px;
+        text-shadow: 1px 2px 0 rgba(180,80,40,0.12);
+      }
+      .subtitle {
+        font-family: 'Crimson Text', serif;
+        font-style: italic;
+        font-size: 1rem;
+        color: #A0624A;
+        text-align: center;
+        margin-bottom: 18px;
+      }
 
+      /* ---- Sudoku grid ---- */
       #sudoku {
-        display:grid; grid-template-columns:repeat(9,50px); grid-template-rows:repeat(9,50px);
-        border:3px solid #8B3A20; background:#C4866A; gap:1px;
-        box-shadow:0 8px 32px rgba(100,40,20,0.18); border-radius:6px; overflow:hidden; flex-shrink:0;
+        display: grid;
+        grid-template-columns: repeat(9, 50px);
+        grid-template-rows: repeat(9, 50px);
+        border: 3px solid #8B3A20;
+        background: #C4866A;
+        gap: 1px;
+        box-shadow: 0 8px 32px rgba(100,40,20,0.18);
+        border-radius: 6px;
+        overflow: hidden;
       }
+
       .cell {
-        width:50px; height:50px; background:#FDF6EC;
-        display:flex; align-items:center; justify-content:center;
-        font-size:1.35rem; font-family:'Playfair Display',serif; font-weight:700; color:#4A2510; transition:background 0.3s;
+        width: 50px; height: 50px;
+        background: #FDF6EC;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.35rem;
+        font-family: 'Playfair Display', serif;
+        font-weight: 700;
+        color: #4A2510;
+        position: relative;
+        transition: background 0.3s;
       }
-      .cell[data-col="3"],.cell[data-col="6"] { border-left:2.5px solid #8B3A20; }
-      .cell[data-row="3"],.cell[data-row="6"] { border-top:2.5px solid #8B3A20; }
+      /* thick box borders */
+      .cell[data-col="3"], .cell[data-col="6"] { border-left: 2.5px solid #8B3A20; }
+      .cell[data-row="3"], .cell[data-row="6"] { border-top: 2.5px solid #8B3A20; }
+
+      .cell.empty { cursor: text; }
       .cell.empty input {
-        width:100%; height:100%; border:none; background:transparent; text-align:center;
-        font-size:1.35rem; font-family:'Playfair Display',serif; font-weight:700; color:#C4663A; outline:none;
+        width: 100%; height: 100%;
+        border: none; background: transparent;
+        text-align: center;
+        font-size: 1.35rem;
+        font-family: 'Playfair Display', serif;
+        font-weight: 700;
+        color: #C4663A;
+        outline: none;
+        cursor: text;
       }
-      .cell.correct { background:#C8F0D0; animation:flashGreen 0.5s ease; }
-      .cell.wrong   { background:#FFD0CC; }
-      .cell.hint-active { background:#FFF8DC !important; animation:hintPulse 0.8s ease-in-out infinite alternate !important; }
-      .cell.hint-active input { color:#8B6000; }
-      @keyframes flashGreen { 0%{background:#7BE89A} 100%{background:#C8F0D0} }
-      @keyframes hintPulse {
-        from { box-shadow:inset 0 0 0 3px #D4A010, 0 0 10px rgba(212,160,16,0.5); }
-        to   { box-shadow:inset 0 0 0 3px #D4A010, 0 0 22px rgba(212,160,16,0.9); }
+      /* feedback states */
+      .cell.correct { background: #C8F0D0; animation: flashGreen 0.5s ease; }
+      .cell.wrong   { background: #FFD0CC; }
+      @keyframes flashGreen {
+        0%   { background: #7BE89A; }
+        100% { background: #C8F0D0; }
       }
 
-      /* ---- Help panel ---- */
-      #help-panel {
-        display:none; flex-direction:column; align-items:center;
-        background:linear-gradient(160deg,#FDF0E4,#FAE4CC); border:2px solid #E0A070;
-        border-radius:18px; padding:1.4rem 1.2rem; width:172px;
-        box-shadow:0 6px 24px rgba(180,80,40,0.13); animation:slideIn 0.5s ease;
-      }
-      #help-panel.visible { display:flex; }
-      @keyframes slideIn { from{opacity:0;transform:translateX(20px)} to{opacity:1;transform:translateX(0)} }
-      .help-title { font-family:'Playfair Display',serif; font-weight:900; font-size:1.1rem; color:#6B3A2A; margin-bottom:0.5rem; text-align:center; }
-      .help-sub   { font-family:'Crimson Text',serif; font-style:italic; font-size:0.88rem; color:#A06040; text-align:center; margin-bottom:1rem; line-height:1.4; }
-
-      #hint-display {
-        font-family:'Crimson Text',serif; font-size:1rem; color:#6B3A2A; text-align:center;
-        line-height:1.5; min-height:64px; margin-bottom:1.1rem; font-style:italic;
-        animation:fadeIn 0.5s ease;
-      }
-      #hint-display strong { font-style:normal; font-size:1.7rem; color:#8B5E00; display:block; margin:2px 0; }
-
-      /* ---- Timer ---- */
-      #timer { font-family:'Playfair Display',serif; font-weight:900; font-size:2.4rem; color:#6B3A2A; line-height:1; }
-      #timer.warn   { color:#C47A2A; }
-      #timer.urgent { color:#C43A2A; animation:timerPulse 0.4s ease-in-out infinite alternate; }
-      @keyframes timerPulse { from{transform:scale(1)} to{transform:scale(1.08)} }
-      #timer-label { font-family:'Crimson Text',serif; font-style:italic; font-size:0.8rem; color:#A06040; margin-top:4px; text-align:center; }
-
-      /* ---- Mini CARE cloud (in panel after timer) ---- */
-      #panel-care-cloud {
-        display:none; cursor:pointer; margin-top:8px;
-        animation:float 2s ease-in-out infinite alternate;
-        filter:drop-shadow(0 3px 10px rgba(196,102,58,0.3));
-        position:relative; user-select:none;
-      }
-      #panel-care-cloud .cloud-label {
-        position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
-        font-family:'Playfair Display',serif; font-weight:900; font-size:1.15rem;
-        color:#6B3A2A; letter-spacing:0.08em;
-      }
-      @keyframes float { from{transform:translateY(0)} to{transform:translateY(-6px)} }
-
-      /* ---- Floating icons ---- */
+      /* ---- Floating task icons ---- */
       .task-icon {
-        position:fixed; font-size:2.8rem; cursor:pointer; z-index:500;
-        animation:pulse 0.8s ease-in-out infinite alternate;
-        filter:drop-shadow(0 0 8px rgba(196,102,58,0.7));
-        user-select:none; background:rgba(255,255,255,0.88); border-radius:50%; padding:4px; line-height:1;
+        position: fixed;
+        font-size: 2.8rem;
+        cursor: pointer;
+        z-index: 500;
+        animation: pulse 0.8s ease-in-out infinite alternate;
+        filter: drop-shadow(0 0 8px rgba(196,102,58,0.7));
+        user-select: none;
+        background: rgba(255,255,255,0.88);
+        border-radius: 50%;
+        padding: 4px;
+        line-height: 1;
+        transition: transform 0.15s;
       }
-      .task-icon:hover  { transform:scale(1.15); }
-      .task-icon.warn   { filter:drop-shadow(0 0 10px rgba(220,140,0,0.9));  animation:pulse-warn 0.5s ease-in-out infinite alternate; }
-      .task-icon.urgent { filter:drop-shadow(0 0 13px rgba(200,30,30,0.95)); animation:pulse-urgent 0.22s ease-in-out infinite alternate; }
-      .task-icon.clicked { transform:scale(0); opacity:0; transition:transform 0.22s,opacity 0.22s; }
-      .sad-icon { position:fixed; font-size:2.8rem; z-index:500; animation:fadeout 2s forwards; user-select:none; line-height:1; }
-      @keyframes pulse        { from{transform:scale(1)}    to{transform:scale(1.1)}  }
-      @keyframes pulse-warn   { from{transform:scale(1)}    to{transform:scale(1.15)} }
-      @keyframes pulse-urgent { from{transform:scale(0.95)} to{transform:scale(1.2)}  }
-      @keyframes fadeout      { 0%{opacity:1} 60%{opacity:1} 100%{opacity:0;transform:scale(0.6)} }
+      .task-icon:hover { transform: scale(1.15); }
+      .task-icon.warn    { filter: drop-shadow(0 0 10px rgba(220,140,0,0.9)); animation: pulse-warn 0.5s ease-in-out infinite alternate; }
+      .task-icon.urgent  { filter: drop-shadow(0 0 13px rgba(200,30,30,0.95)); animation: pulse-urgent 0.22s ease-in-out infinite alternate; }
+      .task-icon.clicked { transform: scale(0); opacity: 0; transition: transform 0.22s, opacity 0.22s; }
 
-      /* ---- CARE cloud (floating) ---- */
+      .sad-icon {
+        position: fixed; font-size: 2.8rem; z-index: 500;
+        animation: fadeout 2s forwards; user-select: none; line-height: 1;
+      }
+
+      @keyframes pulse        { from{transform:scale(1)}   to{transform:scale(1.1)} }
+      @keyframes pulse-warn   { from{transform:scale(1)}   to{transform:scale(1.15)} }
+      @keyframes pulse-urgent { from{transform:scale(0.95)} to{transform:scale(1.2)} }
+      @keyframes fadeout      { 0%{opacity:1;transform:scale(1)} 60%{opacity:1;transform:scale(1.1)} 100%{opacity:0;transform:scale(0.6)} }
+
+      /* ---- CARE cloud ---- */
       .care-cloud {
-        position:fixed; cursor:pointer; z-index:501; user-select:none;
-        animation:float 2s ease-in-out infinite alternate;
-        filter:drop-shadow(0 4px 16px rgba(196,102,58,0.35));
+        position: fixed;
+        cursor: pointer;
+        z-index: 501;
+        user-select: none;
+        animation: float 2s ease-in-out infinite alternate;
+        filter: drop-shadow(0 4px 16px rgba(196,102,58,0.35));
       }
+      .care-cloud svg { display: block; }
       .care-cloud .cloud-label {
-        position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
-        font-family:'Playfair Display',serif; font-weight:900; font-size:1.5rem; color:#6B3A2A; letter-spacing:0.08em;
+        position: absolute; inset: 0;
+        display: flex; align-items: center; justify-content: center;
+        font-family: 'Playfair Display', serif;
+        font-weight: 900;
+        font-size: 1.5rem;
+        color: #6B3A2A;
+        letter-spacing: 0.08em;
       }
+      @keyframes float { from{transform:translateY(0)} to{transform:translateY(-8px)} }
 
       /* ---- Pause overlay ---- */
       #pause-overlay {
-        display:none; position:fixed; inset:0; z-index:9999;
-        background:rgba(253,243,231,0.97); flex-direction:column; align-items:center; justify-content:center;
-        padding:2rem; text-align:center;
+        display: none;
+        position: fixed; inset: 0; z-index: 9999;
+        background: rgba(253,243,231,0.96);
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem;
+        text-align: center;
       }
-      #pause-overlay.visible { display:flex; }
-      .overlay-section { display:none; flex-direction:column; align-items:center; }
-      .overlay-section.active { display:flex; }
-      .overlay-title { font-family:'Playfair Display',serif; font-weight:900; font-size:1.9rem; color:#6B3A2A; margin-bottom:1.2rem; opacity:0; animation:fadeIn 0.6s 0.2s forwards; }
-      .message { font-family:'Crimson Text',serif; font-size:1.15rem; color:#8B4A30; line-height:1.65; max-width:540px; margin-bottom:0.8rem; opacity:0; }
-      .message.italic { font-style:italic; font-size:1.22rem; color:#C4663A; }
-      .message.show { animation:fadeIn 0.7s forwards; }
-      .resume-btn {
-        margin-top:1.4rem; padding:0.7rem 2.2rem;
-        font-family:'Playfair Display',serif; font-weight:700; font-size:1rem;
-        background:linear-gradient(135deg,#C4663A,#E07B50); color:white; border:none;
-        border-radius:40px; cursor:pointer; box-shadow:0 4px 16px rgba(196,102,58,0.35); opacity:0;
-        transition:transform 0.15s;
+      #pause-overlay.visible { display: flex; }
+
+      .pause-icon {
+        font-size: 3.5rem;
+        margin-bottom: 1rem;
+        animation: pulse 1.2s ease-in-out infinite alternate;
       }
-      .resume-btn:hover { transform:scale(1.04); }
-      .resume-btn.show { animation:fadeIn 0.7s forwards; }
+
+      .resilience-title {
+        font-family: 'Playfair Display', serif;
+        font-weight: 900;
+        font-size: 1.9rem;
+        color: #6B3A2A;
+        margin-bottom: 1.2rem;
+        opacity: 0;
+        animation: fadeIn 0.6s 0.2s forwards;
+      }
+
+      .message {
+        font-family: 'Crimson Text', serif;
+        font-size: 1.15rem;
+        color: #8B4A30;
+        line-height: 1.65;
+        max-width: 520px;
+        margin-bottom: 0.8rem;
+        opacity: 0;
+      }
+      .message.italic { font-style: italic; font-size: 1.25rem; color: #C4663A; }
+      .message.show { animation: fadeIn 0.7s forwards; }
+
+      #resume-btn {
+        margin-top: 1.4rem;
+        padding: 0.7rem 2.2rem;
+        font-family: 'Playfair Display', serif;
+        font-weight: 700;
+        font-size: 1rem;
+        background: linear-gradient(135deg, #C4663A, #E07B50);
+        color: white;
+        border: none;
+        border-radius: 40px;
+        cursor: pointer;
+        box-shadow: 0 4px 16px rgba(196,102,58,0.35);
+        opacity: 0;
+        transition: transform 0.15s, box-shadow 0.15s;
+      }
+      #resume-btn:hover { transform: scale(1.04); box-shadow: 0 6px 20px rgba(196,102,58,0.45); }
+      #resume-btn.show { animation: fadeIn 0.7s forwards; }
+
       @keyframes fadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
     </style>
 
     <h1>Solve this Sudoku</h1>
     <p class="subtitle">Make sure to click on every task that appears as well!</p>
-    <div id="game-row">
-      <div id="sudoku"></div>
-      <div id="help-panel">
-        <div class="help-title">💡 Coaching</div>
-        <div class="help-sub">A good coach shows you where to look — not what to write.</div>
-        <div id="hint-display"></div>
-        <div id="timer">1:00</div>
-        <div id="timer-label">remaining</div>
-        <div id="panel-care-cloud">
-          <svg width="100" height="66" viewBox="0 0 120 80" xmlns="http://www.w3.org/2000/svg">
-            <path d="M100,55 Q115,55 115,42 Q115,30 103,30 Q101,18 90,18 Q84,10 74,12 Q66,4 54,8 Q42,4 36,14 Q24,14 22,26 Q12,28 12,40 Q12,55 28,55 Z"
-                  fill="#FDE8D0" stroke="#E07B50" stroke-width="2.5"/>
-          </svg>
-          <div class="cloud-label">CARE</div>
-        </div>
-      </div>
-    </div>
+    <div id="sudoku"></div>
 
+    <!-- Pause overlay -->
     <div id="pause-overlay">
-      <div class="overlay-section" id="section-R">
-        <div class="overlay-title">R — Resilience Training</div>
-        <div class="message italic" id="r1">Take a deep breath. 🌿</div>
-        <div class="message"        id="r2">Every puzzle has a solution — just like every challenge in healthcare.</div>
-        <div class="message italic" id="r3">You are capable of more than you think. 💛</div>
-        <div class="message"        id="r4">Stress narrows your focus. A moment of stillness opens it back up.</div>
-        <div class="message italic" id="r5">Resilience isn't about going faster — it's about going smarter.</div>
-        <div class="message"        id="r6">Just like in nursing: structured pauses and self-compassion make you stronger, not weaker.</div>
-        <div class="message italic" id="r7">You don't need to solve everything at once. 🌱</div>
-        <button class="resume-btn" id="resume-R">▶ Continue</button>
-      </div>
-      <div class="overlay-section" id="section-A">
-        <div class="overlay-title">A — Adaptation Support</div>
-        <div class="message"        id="a1">Without a program like CARE, new employees often face everything at once — icons, sudoku, full pressure, from day one.</div>
-        <div class="message italic" id="a2">Sound familiar? That's exactly what you just experienced. 🎯</div>
-        <div class="message"        id="a3">The CARE start program changes that. Your employer makes a deliberate choice: new employees start at a calmer pace.</div>
-        <div class="message italic" id="a4">Step by step, they take on more tasks and responsibilities. But it begins gently — just like it did here. 🌱</div>
-        <div class="message"        id="a5">That's why the task icons have now disappeared. Through CARE, your employer has chosen to reduce the pressure — for now.</div>
-        <button class="resume-btn" id="resume-A">▶ Continue</button>
-      </div>
-      <div class="overlay-section" id="section-C">
-        <div class="overlay-title">C — Coaching</div>
-        <div class="message"        id="c1">In the CARE start program, you are never alone.</div>
-        <div class="message italic" id="c2">A coach doesn't solve things for you — they help you find the answer yourself. 💡</div>
-        <div class="message"        id="c3">In healthcare, a good mentor makes the difference between feeling lost and feeling capable.</div>
-        <div class="message italic" id="c4">From now on, you have a coaching panel next to your sudoku.</div>
-        <div class="message"        id="c5">It will automatically point you in the right direction — one step at a time.</div>
-        <button class="resume-btn" id="resume-C">▶ Continue</button>
-      </div>
+      <div class="pause-icon">⏸️</div>
+      <div class="resilience-title">R — Resilience Training</div>
+      <div class="message italic" id="m1">Take a deep breath. 🌿</div>
+      <div class="message" id="m2">Every puzzle has a solution — just like every challenge in healthcare.</div>
+      <div class="message italic" id="m3">You are capable of more than you think. 💛</div>
+      <div class="message" id="m4">Stress narrows your focus. A moment of stillness opens it back up.</div>
+      <div class="message italic" id="m5">Resilience isn't about going faster — it's about going smarter.</div>
+      <div class="message" id="m6">Just like in nursing: structured pauses and self-compassion make you stronger, not weaker.</div>
+      <div class="message italic" id="m7">You don't need to solve everything at once. 🌱</div>
+      <button id="resume-btn">▶ Continue</button>
     </div>
 
     <script>
+      // =============================================
+      // SUDOKU
+      // =============================================
       const puzzle = [
-        [5,3,0,0,7,0,0,0,0],[6,0,0,1,9,5,0,0,0],[0,9,8,0,0,0,0,6,0],
-        [8,0,0,0,6,0,0,0,3],[4,0,0,8,0,3,0,0,1],[7,0,0,0,2,0,0,0,6],
-        [0,6,0,0,0,0,2,8,0],[0,0,0,4,1,9,0,0,5],[0,0,0,0,8,0,0,7,9]
+        [5,3,0, 0,7,0, 0,0,0],
+        [6,0,0, 1,9,5, 0,0,0],
+        [0,9,8, 0,0,0, 0,6,0],
+
+        [8,0,0, 0,6,0, 0,0,3],
+        [4,0,0, 8,0,3, 0,0,1],
+        [7,0,0, 0,2,0, 0,0,6],
+
+        [0,6,0, 0,0,0, 2,8,0],
+        [0,0,0, 4,1,9, 0,0,5],
+        [0,0,0, 0,8,0, 0,7,9]
       ];
       const solution = [
-        [5,3,4,6,7,8,9,1,2],[6,7,2,1,9,5,3,4,8],[1,9,8,3,4,2,5,6,7],
-        [8,5,9,7,6,1,4,2,3],[4,2,6,8,5,3,7,9,1],[7,1,3,9,2,4,8,5,6],
-        [9,6,1,5,3,7,2,8,4],[2,8,7,4,1,9,6,3,5],[3,4,5,2,8,6,1,7,9]
+        [5,3,4, 6,7,8, 9,1,2],
+        [6,7,2, 1,9,5, 3,4,8],
+        [1,9,8, 3,4,2, 5,6,7],
+
+        [8,5,9, 7,6,1, 4,2,3],
+        [4,2,6, 8,5,3, 7,9,1],
+        [7,1,3, 9,2,4, 8,5,6],
+
+        [9,6,1, 5,3,7, 2,8,4],
+        [2,8,7, 4,1,9, 6,3,5],
+        [3,4,5, 2,8,6, 1,7,9]
       ];
 
       const grid = document.getElementById('sudoku');
-      let currentHintCell = null;
-
       for (let r = 0; r < 9; r++) {
         for (let c = 0; c < 9; c++) {
           const cell = document.createElement('div');
-          cell.className = 'cell'; cell.dataset.row = r; cell.dataset.col = c;
+          cell.className = 'cell';
+          cell.dataset.row = r;
+          cell.dataset.col = c;
           const val = puzzle[r][c];
           if (val !== 0) {
             cell.textContent = val;
@@ -746,19 +805,16 @@ elif st.session_state.page == "sudoku":
             cell.classList.add('empty');
             const inp = document.createElement('input');
             inp.type = 'text'; inp.maxLength = 1;
-            inp.addEventListener('keydown', e => { if (!'123456789Backspace'.includes(e.key)) e.preventDefault(); });
+            inp.addEventListener('keydown', e => {
+              if (!'123456789Backspace'.includes(e.key)) e.preventDefault();
+            });
             inp.addEventListener('input', () => {
               const v = inp.value.replace(/[^1-9]/g,'');
               inp.value = v ? v[v.length-1] : '';
               if (!inp.value) { cell.classList.remove('correct','wrong'); return; }
-              const ok = parseInt(inp.value) === solution[r][c];
-              cell.classList.toggle('correct', ok);
-              cell.classList.toggle('wrong',  !ok);
-              if (ok && cell === currentHintCell) {
-                cell.classList.remove('hint-active');
-                currentHintCell = null;
-                showNextHint(); // immediately show next hint after correct fill
-              }
+              const correct = parseInt(inp.value) === solution[r][c];
+              cell.classList.toggle('correct', correct);
+              cell.classList.toggle('wrong',   !correct);
             });
             cell.appendChild(inp);
           }
@@ -766,180 +822,146 @@ elif st.session_state.page == "sudoku":
         }
       }
 
-      // ---- AUTO HINT ----
-      let hintInterval = null;
+      // =============================================
+      // FLOATING ICONS + CARE CLOUD
+      // =============================================
+      const ICONS = ["🔔","💊","🛏️","🩺","💉","🧪","📋","🧹","🧴","🩹"];
+      const EXPIRE_MS = 5000;
+      const SAD_MS    = 2000;
 
-      function showNextHint() {
-        if (currentHintCell) { currentHintCell.classList.remove('hint-active'); currentHintCell = null; }
-        const candidates = [];
-        for (let r = 0; r < 9; r++)
-          for (let c = 0; c < 9; c++)
-            if (puzzle[r][c] === 0) {
-              const cell = grid.querySelector('[data-row="'+r+'"][data-col="'+c+'"]');
-              if (!cell.classList.contains('correct')) candidates.push({r, c, cell});
-            }
-        if (!candidates.length) {
-          document.getElementById('hint-display').innerHTML = 'All cells filled correctly! 🎉';
-          clearInterval(hintInterval);
-          return;
-        }
-        const {r, c, cell} = candidates[Math.floor(Math.random() * candidates.length)];
-        cell.classList.add('hint-active');
-        currentHintCell = cell;
-        const disp = document.getElementById('hint-display');
-        disp.style.animation = 'none';
-        disp.offsetHeight; // reflow to restart animation
-        disp.style.animation = '';
-        disp.innerHTML = 'Fill in<strong>' + solution[r][c] + '</strong>in the glowing cell ✨';
-      }
+      let paused        = false;
+      let careShown     = false;
+      let nextSpawnId   = null;
+      const gameStart   = Date.now();
 
-      function startAutoHint() {
-        showNextHint();                    // immediate first hint
-        hintInterval = setInterval(showNextHint, 12000); // new hint every 12s
-      }
+      // Track active icons for pause/resume
+      const activeIcons = new Map(); // el → {t1,t2,tExp,remaining,startedAt}
 
-      // ---- TIMER ----
-      let timerInterval = null;
-      function startTimer(seconds) {
-        const timerEl = document.getElementById('timer');
-        const labelEl = document.getElementById('timer-label');
-        let remaining = seconds;
-        function tick() {
-          const m = Math.floor(remaining/60), s = remaining%60;
-          timerEl.textContent = m+':'+String(s).padStart(2,'0');
-          timerEl.className = remaining<=10 ? 'urgent' : remaining<=30 ? 'warn' : '';
-          if (remaining-- <= 0) {
-            clearInterval(timerInterval);
-            timerEl.style.display = 'none';
-            labelEl.style.display = 'none';
-            // Show CARE cloud in panel
-            document.getElementById('panel-care-cloud').style.display = 'block';
-          }
-        }
-        tick(); timerInterval = setInterval(tick, 1000);
-      }
-
-      // Panel CARE cloud click (4th cloud — behaviour TBD)
-      document.getElementById('panel-care-cloud').addEventListener('click', () => {
-        // placeholder — user will define later
-      });
-
-      // ---- ICONS + CARE CLOUDS ----
-      const ICONS=['🔔','💊','🛏️','🩺','💉','🧪','📋','🧹','🧴','🩹'];
-      const EXPIRE_MS=5000, SAD_MS=2000;
-      let paused=false, careCount=0, iconsDisabled=false, spawningStopped=false;
-      let nextSpawnId=null, resumeTime=null;
-      const gameStart=Date.now();
-      const activeIcons=new Map();
-
-      function scheduleNext(delay) {
-        if (spawningStopped) return;
-        nextSpawnId = setTimeout(doSpawn, delay!==undefined ? delay : (4+Math.random()*3)*1000);
+      function scheduleNext() {
+        const delay = (4 + Math.random() * 3) * 1000;
+        nextSpawnId = setTimeout(doSpawn, delay);
       }
 
       function doSpawn() {
-        if (paused || spawningStopped) return;
-        const now=Date.now(), sinceStart=now-gameStart, sinceResume=resumeTime?now-resumeTime:Infinity;
-        const shouldCare =
-          (careCount===0 && sinceStart>=20000)  ||
-          (careCount===1 && sinceResume>=15000) ||
-          (careCount===2 && sinceResume>=15000);
-        if (shouldCare) {
+        if (paused) return;
+        if (!careShown && Date.now() - gameStart >= 20000) {
+          careShown = true;
           spawnCareCloud();
-        } else if (!iconsDisabled) {
-          spawnIcon(); scheduleNext();
         } else {
-          scheduleNext(2000); // keep polling for next CARE cloud
+          spawnIcon();
         }
+        scheduleNext();
       }
 
       function randomPos() {
-        const m=65;
-        return { x:m+Math.random()*(window.innerWidth-m*2), y:m+Math.random()*(window.innerHeight-m*2) };
+        const margin = 65;
+        return {
+          x: margin + Math.random() * (window.innerWidth  - margin*2),
+          y: margin + Math.random() * (window.innerHeight - margin*2)
+        };
       }
 
       function spawnIcon() {
-        if (iconsDisabled||spawningStopped) return;
-        const el=document.createElement('div');
-        el.className='task-icon'; el.textContent=ICONS[Math.floor(Math.random()*ICONS.length)];
-        const {x,y}=randomPos(); el.style.left=x+'px'; el.style.top=y+'px';
+        const icon = ICONS[Math.floor(Math.random() * ICONS.length)];
+        const el = document.createElement('div');
+        el.className = 'task-icon';
+        el.textContent = icon;
+        const {x, y} = randomPos();
+        el.style.left = x + 'px'; el.style.top = y + 'px';
         document.body.appendChild(el);
-        const t1=setTimeout(()=>el.classList.add('warn'),3000);
-        const t2=setTimeout(()=>el.classList.add('urgent'),4200);
-        const tExp=setTimeout(()=>expireIcon(el),EXPIRE_MS);
-        activeIcons.set(el,{t1,t2,tExp,startedAt:Date.now(),duration:EXPIRE_MS});
-        el.addEventListener('click',()=>{
-          if(paused)return;
-          const e=activeIcons.get(el);
-          if(e){clearTimeout(e.t1);clearTimeout(e.t2);clearTimeout(e.tExp);}
-          activeIcons.delete(el); el.classList.add('clicked'); setTimeout(()=>el.remove(),300);
+
+        const t1    = setTimeout(() => el.classList.add('warn'),   3000);
+        const t2    = setTimeout(() => el.classList.add('urgent'), 4200);
+        const tExp  = setTimeout(() => expireIcon(el),             EXPIRE_MS);
+        activeIcons.set(el, {t1, t2, tExp, startedAt: Date.now(), duration: EXPIRE_MS});
+
+        el.addEventListener('click', () => {
+          if (paused) return;
+          const entry = activeIcons.get(el);
+          if (entry) { clearTimeout(entry.t1); clearTimeout(entry.t2); clearTimeout(entry.tExp); }
+          activeIcons.delete(el);
+          el.classList.add('clicked');
+          setTimeout(() => el.remove(), 300);
         });
       }
 
       function expireIcon(el) {
         activeIcons.delete(el);
-        const sad=document.createElement('div'); sad.className='sad-icon'; sad.textContent='😢';
-        sad.style.left=el.style.left; sad.style.top=el.style.top;
-        document.body.appendChild(sad); el.remove(); setTimeout(()=>sad.remove(),SAD_MS);
+        const sad = document.createElement('div');
+        sad.className = 'sad-icon';
+        sad.textContent = '😢';
+        sad.style.left = el.style.left; sad.style.top = el.style.top;
+        document.body.appendChild(sad);
+        el.remove();
+        setTimeout(() => sad.remove(), SAD_MS);
       }
 
       function spawnCareCloud() {
-        const {x,y}=randomPos();
-        const w=document.createElement('div'); w.className='care-cloud';
-        w.style.left=x+'px'; w.style.top=y+'px';
-        w.innerHTML='<svg width="120" height="80" viewBox="0 0 120 80" xmlns="http://www.w3.org/2000/svg"><path d="M100,55 Q115,55 115,42 Q115,30 103,30 Q101,18 90,18 Q84,10 74,12 Q66,4 54,8 Q42,4 36,14 Q24,14 22,26 Q12,28 12,40 Q12,55 28,55 Z" fill="#FDE8D0" stroke="#E07B50" stroke-width="2.5"/></svg><div class="cloud-label">CARE</div>';
-        document.body.appendChild(w);
-        w.addEventListener('click',()=>{w.remove();pauseGame();});
+        const {x, y} = randomPos();
+        const wrapper = document.createElement('div');
+        wrapper.className = 'care-cloud';
+        wrapper.style.left = x + 'px'; wrapper.style.top = y + 'px';
+        wrapper.innerHTML = `
+          <svg width="120" height="80" viewBox="0 0 120 80" xmlns="http://www.w3.org/2000/svg">
+            <path d="M100,55 Q115,55 115,42 Q115,30 103,30 Q101,18 90,18 Q84,10 74,12 Q66,4 54,8 Q42,4 36,14 Q24,14 22,26 Q12,28 12,40 Q12,55 28,55 Z"
+                  fill="#FDE8D0" stroke="#E07B50" stroke-width="2.5"/>
+          </svg>
+          <div class="cloud-label">CARE</div>`;
+        document.body.appendChild(wrapper);
+
+        wrapper.addEventListener('click', () => {
+          wrapper.remove();
+          pauseGame();
+        });
       }
 
+      // =============================================
+      // PAUSE / RESUME
+      // =============================================
       function pauseGame() {
-        paused=true; clearTimeout(nextSpawnId);
-        activeIcons.forEach((entry,el)=>{
-          clearTimeout(entry.t1);clearTimeout(entry.t2);clearTimeout(entry.tExp);
-          entry.remaining=entry.duration-(Date.now()-entry.startedAt);
-          el.style.animationPlayState='paused';
+        paused = true;
+        clearTimeout(nextSpawnId);
+
+        // Freeze all active icons
+        activeIcons.forEach((entry, el) => {
+          clearTimeout(entry.t1); clearTimeout(entry.t2); clearTimeout(entry.tExp);
+          entry.remaining = entry.duration - (Date.now() - entry.startedAt);
+          el.style.animationPlayState = 'paused';
         });
-        careCount++;
-        const sMap={1:'section-R',2:'section-A',3:'section-C'};
-        const pMap={1:'r',2:'a',3:'c'}, nMap={1:7,2:5,3:5}, bMap={1:'resume-R',2:'resume-A',3:'resume-C'};
-        document.querySelectorAll('.overlay-section').forEach(s=>s.classList.remove('active'));
-        document.getElementById(sMap[careCount]).classList.add('active');
-        document.querySelectorAll('.message,.resume-btn').forEach(el=>{el.classList.remove('show');el.style.opacity='0';});
-        document.getElementById('pause-overlay').classList.add('visible');
-        const pfx=pMap[careCount], n=nMap[careCount];
-        for(let i=1;i<=n;i++){const el=document.getElementById(pfx+i);if(el)setTimeout(()=>el.classList.add('show'),i*900);}
-        setTimeout(()=>document.getElementById(bMap[careCount]).classList.add('show'),(n+1)*900);
+
+        // Show overlay and reveal messages
+        const overlay = document.getElementById('pause-overlay');
+        overlay.classList.add('visible');
+
+        const delays = [0.3, 1.0, 1.8, 2.6, 3.4, 4.2, 5.0, 5.9];
+        ['m1','m2','m3','m4','m5','m6','m7'].forEach((id, i) => {
+          setTimeout(() => {
+            const el = document.getElementById(id);
+            if (el) el.classList.add('show');
+          }, delays[i] * 1000);
+        });
+        setTimeout(() => {
+          document.getElementById('resume-btn').classList.add('show');
+        }, delays[7] * 1000);
       }
 
-      function unfreezeIcons() {
-        activeIcons.forEach((entry,el)=>{
-          el.style.animationPlayState='';
-          const rem=Math.max(entry.remaining||1000,500);
-          entry.tExp=setTimeout(()=>expireIcon(el),rem);
+      document.getElementById('resume-btn').addEventListener('click', resumeGame);
+
+      function resumeGame() {
+        paused = false;
+        document.getElementById('pause-overlay').classList.remove('visible');
+
+        // Unfreeze icons (restart with remaining time)
+        activeIcons.forEach((entry, el) => {
+          el.style.animationPlayState = '';
+          const remaining = Math.max(entry.remaining || 1000, 500);
+          entry.tExp = setTimeout(() => expireIcon(el), remaining);
         });
+
+        scheduleNext();
       }
 
-      document.getElementById('resume-R').addEventListener('click',()=>{
-        document.getElementById('pause-overlay').classList.remove('visible');
-        paused=false; resumeTime=Date.now(); unfreezeIcons(); scheduleNext(2000);
-      });
-
-      document.getElementById('resume-A').addEventListener('click',()=>{
-        document.getElementById('pause-overlay').classList.remove('visible');
-        paused=false; iconsDisabled=true; resumeTime=Date.now();
-        activeIcons.forEach((entry,el)=>{clearTimeout(entry.t1);clearTimeout(entry.t2);clearTimeout(entry.tExp);el.remove();});
-        activeIcons.clear(); clearTimeout(nextSpawnId);
-        scheduleNext(2000);
-      });
-
-      document.getElementById('resume-C').addEventListener('click',()=>{
-        document.getElementById('pause-overlay').classList.remove('visible');
-        paused=false; spawningStopped=true; clearTimeout(nextSpawnId);
-        document.getElementById('help-panel').classList.add('visible');
-        startAutoHint();
-        startTimer(60);
-      });
-
+      // First spawn after 3 seconds
       setTimeout(doSpawn, 3000);
     </script>
-    """, height=660, scrolling=False)
+    """, height=640, scrolling=False)
