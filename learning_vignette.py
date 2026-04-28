@@ -827,6 +827,43 @@ elif st.session_state.page == "sudoku":
         margin: 0.8rem auto 1.2rem;
       }
       #care-e-messages .message { max-width: 480px; }
+      #end-care-cloud {
+        position: relative;
+        display: inline-block;
+        cursor: pointer;
+        margin: 1rem 0;
+        animation: floatCloud 3s ease-in-out infinite alternate;
+      }
+      #end-care-cloud .cloud-label {
+        position: absolute;
+        top: 50%; left: 50%;
+        transform: translate(-50%, -60%);
+        font-family: 'Playfair Display', serif;
+        font-weight: 900;
+        font-size: 1.1rem;
+        color: #6B3A2A;
+      }
+      #end-care-cloud:hover svg path { fill: #F5D0A9; }
+      @keyframes floatCloud {
+        from { transform: translateY(0); }
+        to   { transform: translateY(-8px); }
+      }
+      #finish-btn {
+        margin-top: 1.8rem;
+        font-family: 'Playfair Display', serif;
+        font-weight: 700;
+        font-size: 1rem;
+        background: linear-gradient(135deg, #C4663A, #E07B50);
+        color: white;
+        border: none;
+        border-radius: 40px;
+        padding: 0.65rem 2.2rem;
+        cursor: pointer;
+        box-shadow: 0 4px 16px rgba(196,102,58,0.35);
+        letter-spacing: 0.05em;
+        animation: fadeIn 0.6s ease forwards;
+      }
+      #finish-btn:hover { transform: scale(1.03); box-shadow: 0 6px 20px rgba(196,102,58,0.5); }
     </style>
 
     <h1>Solve this Sudoku</h1>
@@ -850,12 +887,19 @@ elif st.session_state.page == "sudoku":
     <!-- End-of-shift overlay -->
     <div id="end-overlay">
       <div class="end-shift-icon">🏥</div>
-      <div class="resilience-title" id="end-title">Your shift is over.</div>
-      <p class="end-subtitle" id="end-subtitle">Time to reflect on how it went.</p>
+      <div class="resilience-title">Your shift is done.</div>
+      <div id="end-care-cloud">
+        <svg width="120" height="80" viewBox="0 0 120 80" xmlns="http://www.w3.org/2000/svg">
+          <path d="M100,55 Q115,55 115,42 Q115,30 103,30 Q101,18 90,18 Q84,10 74,12 Q66,4 54,8 Q42,4 36,14 Q24,14 22,26 Q12,28 12,40 Q12,55 28,55 Z"
+                fill="#FDE8D0" stroke="#E07B50" stroke-width="2.5"/>
+        </svg>
+        <div class="cloud-label">CARE</div>
+      </div>
       <div id="care-e-wrap" style="display:none;">
         <div class="care-divider"></div>
         <div class="resilience-title" style="font-size:1.4rem; margin-bottom:0.8rem;">E — Early Feedback</div>
         <div id="care-e-messages"></div>
+        <button id="finish-btn" style="display:none;" onclick="showFinalPage()">Finish</button>
       </div>
     </div>
 
@@ -1359,7 +1403,6 @@ elif st.session_state.page == "sudoku":
 
         // Build personalised E — Early Feedback messages
         const msgs = [];
-
         if (pct === 100) {
           msgs.push({ text: 'Excellent work — you solved the entire puzzle correctly! 🌟', italic: true });
           msgs.push({ text: 'That kind of focus and precision is exactly what great care looks like.' });
@@ -1370,25 +1413,23 @@ elif st.session_state.page == "sudoku":
           msgs.push({ text: 'You got ' + correct + ' out of ' + total + ' cells right this time.', italic: true });
           msgs.push({ text: "Don't be discouraged — every attempt builds your ability to work under pressure." });
         }
-
         if (wrong > 0) {
           msgs.push({ text: wrong + ' cell' + (wrong > 1 ? 's were' : ' was') + ' filled in incorrectly. Checking your work before moving on is a habit worth practising.' });
         } else if (correct > 0) {
           msgs.push({ text: 'No incorrect entries — your accuracy under time pressure is commendable. 🌿', italic: true });
         }
-
         if (coachingActive || careIndex >= 3) {
           msgs.push({ text: 'You worked with coaching support in the final phase — using available guidance is a real professional strength.', italic: true });
         }
-
         msgs.push({ text: 'Early feedback like this helps you grow faster and feel more confident in your role. Keep going. 🌱' });
 
-        // Reveal E feedback after a short pause
-        setTimeout(() => {
+        // CARE cloud click reveals feedback
+        document.getElementById('end-care-cloud').addEventListener('click', function() {
+          this.style.display = 'none';
           const wrap = document.getElementById('care-e-wrap');
           wrap.style.display = 'block';
           const container = document.getElementById('care-e-messages');
-          const delays = [0.3, 1.1, 1.9, 2.7, 3.5];
+          const delays = [0.3, 1.1, 1.9, 2.7, 3.5, 4.3];
           msgs.forEach((m, i) => {
             const div = document.createElement('div');
             div.className = 'message' + (m.italic ? ' italic' : '');
@@ -1396,7 +1437,24 @@ elif st.session_state.page == "sudoku":
             container.appendChild(div);
             setTimeout(() => div.classList.add('show'), delays[i] * 1000);
           });
-        }, 2000);
+          // Show finish button after all messages
+          setTimeout(() => {
+            document.getElementById('finish-btn').style.display = 'inline-block';
+          }, delays[msgs.length - 1] * 1000 + 1000);
+        });
+      }
+
+      function showFinalPage() {
+        document.getElementById('end-overlay').classList.remove('visible');
+        document.getElementById('end-overlay').style.display = 'none';
+        document.body.innerHTML = '';
+        document.body.style.cssText = 'margin:0;display:flex;align-items:center;justify-content:center;min-height:100vh;background:linear-gradient(160deg,#FDF6EE 0%,#FAE8D4 100%);font-family:"Crimson Text",serif;text-align:center;padding:2rem;box-sizing:border-box;';
+        document.body.innerHTML = '<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Crimson+Text:ital,wght@0,400;1,400&display=swap" rel="stylesheet">' +
+          '<div style="max-width:500px;">' +
+          '<div style="font-size:2.5rem;margin-bottom:1rem;">🌿</div>' +
+          '<div style="font-family:Playfair Display,serif;font-weight:900;font-size:2rem;color:#6B3A2A;margin-bottom:1rem;line-height:1.2;">You reached the end of the learning vignette.</div>' +
+          '<p style="font-style:italic;font-size:1.15rem;color:#A0624A;line-height:1.7;">Thank you for your attention.</p>' +
+          '</div>';
       }
 
     </script>
