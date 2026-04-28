@@ -1425,33 +1425,27 @@ elif st.session_state.page == "sudoku":
         {
           title: 'R — Resilience Training',
           msgs: [
-            { id:'m1', text:'Working in healthcare means carrying a high emotional and mental load. That takes real strength. 🌿', italic:true },
-            { id:'m2', text:'Resilience training is one of the four pillars of the CARE START Program — because mental well-being is not a luxury, it is a foundation.' },
-            { id:'m3', text:'It includes learning to manage stress, cope with difficult situations, and build self-confidence over time. 💛', italic:true },
-            { id:'m4', text:'Structured debriefs and access to psychological support help you process what is hard — before it becomes too heavy.' },
-            { id:'m5', text:'The CARE START approach embeds this support preventively — not only when problems arise, but from day one.', italic:true },
-            { id:'m6', text:'A pause like this one is not a weakness. It is exactly what resilience looks like in practice.' },
-            { id:'m7', text:'Take a breath. You are doing better than you think. 🌱', italic:true }
+            { id:'m1', text:'Working in healthcare means carrying a high emotional and mental load. 🌿', italic:true },
+            { id:'m2', text:'Resilience Training is one of the four pillars of the CARE START Program. It focuses on stress management, coping with difficult situations, and building self-confidence.' },
+            { id:'m3', text:'Support is offered preventively — from day one, not only when things go wrong. 💛', italic:true },
+            { id:'m4', text:'A pause like this one is not a weakness. It is exactly what resilience looks like in practice. 🌱', italic:false }
           ]
         },
         {
           title: 'A — Adaptation Support',
           msgs: [
-            { id:'m1', text:'Starting a new role in healthcare is not just a professional transition — it is a personal one too.', italic:true },
-            { id:'m2', text:'The CARE START Program recognises this through its Adaptation Support pillar: a phased entry where you gradually take on more responsibility, rather than being thrown in at the deep end.' },
-            { id:'m3', text:'Before you even start, realistic job previews help align your expectations with the reality of the workplace — reducing the risk of transition shock. 💛', italic:true },
-            { id:'m4', text:'To reflect this, the floating tasks will now disappear. Just like in a well-supported onboarding, the pressure is deliberately reduced so you can focus on what matters most.' },
-            { id:'m5', text:'You are not expected to handle everything at once. Adapting takes time — and that is by design. 🌱', italic:true }
+            { id:'m1', text:'Starting a new role in healthcare is a major transition — personally and professionally.', italic:true },
+            { id:'m2', text:'The CARE START Program offers a phased entry: new employees gradually take on more responsibility, supported by realistic previews of the job before they even start.' },
+            { id:'m3', text:'To reflect this, the floating tasks will now disappear — a deliberate reduction of pressure, so you can focus on what matters. 💛', italic:true },
+            { id:'m4', text:'Adapting takes time. That is not a flaw — it is by design. 🌱', italic:false }
           ]
         },
         {
           title: 'C — Coaching',
           msgs: [
             { id:'m1', text:'Every new healthcare professional deserves a guide. 🤝', italic:true },
-            { id:'m2', text:'The Coaching pillar of the CARE START Program pairs each new employee with a dedicated, experienced mentor — someone who provides not just technical support, but also social and emotional guidance.' },
-            { id:'m3', text:'Regular check-ins during the first months ensure you can ask questions, voice uncertainties, and feel less alone. 💛', italic:true },
-            { id:'m4', text:'For HR, this means carefully selecting and training mentors — and giving them the time and resources to truly fulfil that role.' },
-            { id:'m5', text:'Asking for support is not a step back. It is one of the most professional things you can do. 🌱', italic:true }
+            { id:'m2', text:'The Coaching pillar pairs each newcomer with an experienced mentor who provides technical, social, and emotional support through regular check-ins.' },
+            { id:'m3', text:'Asking for support is not a step back — it is one of the most professional things you can do. 🌱', italic:true }
           ]
         }
       ];
