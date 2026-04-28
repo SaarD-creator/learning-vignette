@@ -876,10 +876,49 @@ elif st.session_state.page == "sudoku":
         animation: fadeIn 0.6s ease forwards;
       }
       #finish-btn:hover { transform: scale(1.03); box-shadow: 0 6px 20px rgba(196,102,58,0.5); }
+
+      /* ---- CARE summary grid ---- */
+      .care-summary-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.8rem;
+        max-width: 520px;
+        margin: 0 auto 1rem;
+        text-align: left;
+      }
+      .care-letter-block {
+        background: white;
+        border-radius: 12px;
+        padding: 0.9rem 1rem;
+        box-shadow: 0 2px 10px rgba(196,102,58,0.1);
+        border-left: 4px solid #E07B50;
+      }
+      .care-letter-badge {
+        font-family: 'Playfair Display', serif;
+        font-weight: 900;
+        font-size: 1.5rem;
+        color: #C4663A;
+        line-height: 1;
+        margin-bottom: 0.2rem;
+      }
+      .care-letter-title {
+        font-family: 'Playfair Display', serif;
+        font-weight: 700;
+        font-size: 0.85rem;
+        color: #6B3A2A;
+        margin-bottom: 0.4rem;
+      }
+      .care-letter-body {
+        font-family: 'Crimson Text', serif;
+        font-size: 0.9rem;
+        color: #8B4A30;
+        line-height: 1.5;
+      }
     </style>
 
     <h1>Solve this Sudoku</h1>
     <p class="subtitle">Make sure to click on every task that appears as well!</p>
+    <button onclick="endGame()" style="position:fixed;top:8px;right:8px;font-size:0.7rem;padding:4px 10px;background:#eee;border:1px solid #ccc;border-radius:20px;cursor:pointer;opacity:0.5;z-index:9999;">⏭ Skip to end</button>
 
     <div id="timer-wrap">
       <div id="timer-display">2:00</div>
@@ -913,7 +952,35 @@ elif st.session_state.page == "sudoku":
     <div id="care-e-overlay">
       <div class="resilience-title">E — Early Feedback</div>
       <div id="care-e-messages"></div>
-      <button id="finish-btn" style="display:none;" onclick="showFinalPage()">Finish</button>
+
+      <!-- CARE summary, revealed after feedback -->
+      <div id="care-summary" style="display:none;">
+        <div class="care-divider" style="margin-top:1.4rem;"></div>
+        <div style="font-family:'Playfair Display',serif;font-weight:900;font-size:1.3rem;color:#6B3A2A;margin-bottom:1rem;opacity:0;animation:fadeIn 0.6s 0.2s forwards;">The CARE Start Program</div>
+        <div class="care-summary-grid">
+          <div class="care-letter-block">
+            <div class="care-letter-badge">C</div>
+            <div class="care-letter-title">Coaching</div>
+            <div class="care-letter-body">Personalised guidance from an experienced colleague helps new nurses navigate challenges. In the sudoku, coaching highlighted exactly where to focus — just as a mentor narrows down what matters most.</div>
+          </div>
+          <div class="care-letter-block">
+            <div class="care-letter-badge">A</div>
+            <div class="care-letter-title">Adaptation Support</div>
+            <div class="care-letter-body">A new role takes time to adjust to. In the sudoku, the task icons stopped after the A cloud — a moment of breathing room to recalibrate, just as new nurses need space to find their footing.</div>
+          </div>
+          <div class="care-letter-block">
+            <div class="care-letter-badge">R</div>
+            <div class="care-letter-title">Resilience Training</div>
+            <div class="care-letter-body">Working under pressure is part of the job. The sudoku simulated that pressure — and the R cloud offered a pause to reset, the way resilience training teaches you to recover and keep going.</div>
+          </div>
+          <div class="care-letter-block">
+            <div class="care-letter-badge">E</div>
+            <div class="care-letter-title">Early Feedback</div>
+            <div class="care-letter-body">Timely feedback accelerates growth. This debrief reflects that — giving you an honest look at what went well and where to improve, before habits have a chance to solidify.</div>
+          </div>
+        </div>
+        <button id="finish-btn" onclick="showFinalPage()" style="display:none;">Continue</button>
+      </div>
     </div>
 
     <script>
@@ -1449,9 +1516,13 @@ elif st.session_state.page == "sudoku":
             setTimeout(() => div.classList.add('show'), delays[i] * 1000);
           });
           // Show finish button after all messages
+          const lastDelay = delays[msgs.length - 1] * 1000 + 1000;
           setTimeout(() => {
-            document.getElementById('finish-btn').style.display = 'inline-block';
-          }, delays[msgs.length - 1] * 1000 + 1000);
+            document.getElementById('care-summary').style.display = 'block';
+            setTimeout(() => {
+              document.getElementById('finish-btn').style.display = 'inline-block';
+            }, 800);
+          }, lastDelay);
         });
       }
 
