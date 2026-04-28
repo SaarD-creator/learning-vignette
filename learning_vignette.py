@@ -807,9 +807,6 @@ elif st.session_state.page == "sudoku":
         if (timerPaused || timerSeconds <= 0) return;
         timerSeconds--;
         updateTimerDisplay();
-        if (timerSeconds === 0 && careIndex === careSequence.length - 1) {
-          spawnCareCloud();
-        }
       }, 1000);
 
       // =============================================
@@ -880,63 +877,50 @@ elif st.session_state.page == "sudoku":
       const EXPIRE_MS = 5000;
       const SAD_MS    = 2000;
 
-      const careSequence = [
+      // 3 CARE clouds: R first, then A (icons stop after), then C
+      const careData = [
         {
-          letter: 'C',
-          title: 'C — Coaching',
-          messages: [
-            { text: 'You are not alone in this. 🤝', italic: true },
-            { text: 'Great nurses are made, not born — coaching makes the difference.' },
-            { text: "Reach out to your mentor. That's exactly what they're there for. 💛", italic: true },
-            { text: "Asking for guidance is not a weakness. It's wisdom." },
-            { text: 'Every expert was once a beginner who kept asking questions.', italic: true },
+          title: 'R \u2014 Resilience Training',
+          msgs: [
+            { id:'m1', text:'Take a deep breath. \uD83C\uDF3F', italic:true },
+            { id:'m2', text:'Every puzzle has a solution \u2014 just like every challenge in healthcare.' },
+            { id:'m3', text:'You are capable of more than you think. \uD83D\uDC9B', italic:true },
+            { id:'m4', text:'Stress narrows your focus. A moment of stillness opens it back up.' },
+            { id:'m5', text:"Resilience isn\u2019t about going faster \u2014 it\u2019s about going smarter.", italic:true },
+            { id:'m6', text:'Just like in nursing: structured pauses and self-compassion make you stronger, not weaker.' },
+            { id:'m7', text:"You don\u2019t need to solve everything at once. \uD83C\uDF31", italic:true }
           ]
         },
         {
-          letter: 'A',
-          title: 'A — Adaptation Support',
-          messages: [
-            { text: 'Adapting takes time. Be patient with yourself. 🌱', italic: true },
-            { text: 'Every new environment has a learning curve — you are right on track.' },
-            { text: 'Change is uncomfortable. Growth is too. Both are worth it. 💛', italic: true },
-            { text: "You don't need to have it all figured out yet." },
-            { text: 'Support is around you — let yourself lean on it.', italic: true },
+          title: 'A \u2014 Adaptation Support',
+          msgs: [
+            { id:'m1', text:'Adapting to a new role takes time \u2014 and that is perfectly normal.', italic:true },
+            { id:'m2', text:'You are not expected to know everything from day one.' },
+            { id:'m3', text:'Support is not a sign of weakness. It is how we grow together. \uD83D\uDC9B', italic:true },
+            { id:'m4', text:'Lean on your team. Ask questions. Adapt at your own pace.' },
+            { id:'m5', text:'Every small step forward counts. \uD83C\uDF31', italic:true }
           ]
         },
         {
-          letter: 'R',
-          title: 'R — Resilience Training',
-          messages: [
-            { text: 'Take a deep breath. 🌿', italic: true },
-            { text: 'Every puzzle has a solution — just like every challenge in healthcare.' },
-            { text: 'You are capable of more than you think. 💛', italic: true },
-            { text: 'Stress narrows your focus. A moment of stillness opens it back up.' },
-            { text: "Resilience isn't about going faster — it's about going smarter.", italic: true },
-            { text: 'Just like in nursing: structured pauses and self-compassion make you stronger, not weaker.' },
-            { text: "You don't need to solve everything at once. 🌱", italic: true },
-          ]
-        },
-        {
-          letter: 'E',
-          title: 'E — Early Feedback',
-          messages: [
-            { text: "Take a moment to reflect on how you're doing. 🌿", italic: true },
-            { text: 'Early feedback helps you grow faster and feel more confident.' },
-            { text: 'Sharing how you feel is the first step to getting better support. 💛', italic: true },
-            { text: "You've made it through the challenge. That matters." },
-            { text: 'Reflection today builds the resilience of tomorrow.', italic: true },
+          title: 'C \u2014 Coaching',
+          msgs: [
+            { id:'m1', text:'A good coach can change everything. \uD83E\uDD1D', italic:true },
+            { id:'m2', text:'Coaching is not about fixing what is broken \u2014 it is about unlocking what is possible.' },
+            { id:'m3', text:'Share what you need. Your supervisor is there to support you. \uD83D\uDC9B', italic:true },
+            { id:'m4', text:'You grow faster when you learn alongside someone who guides you.' },
+            { id:'m5', text:'Asking for help is not a step back. It is a step forward. \uD83C\uDF31', italic:true }
           ]
         }
       ];
 
       let careIndex   = 0;
+      let iconsActive = true;
       let paused      = false;
       let nextSpawnId = null;
       let nextCareId  = null;
-      const gameStart = Date.now();
 
       // Track active icons for pause/resume
-      const activeIcons = new Map(); // el → {t1,t2,tExp,remaining,startedAt}
+      const activeIcons = new Map();
 
       function scheduleNext() {
         const delay = (4 + Math.random() * 3) * 1000;
@@ -944,7 +928,7 @@ elif st.session_state.page == "sudoku":
       }
 
       function doSpawn() {
-        if (paused) return;
+        if (paused || !iconsActive) return;
         spawnIcon();
         scheduleNext();
       }
@@ -968,9 +952,9 @@ elif st.session_state.page == "sudoku":
         el.style.left = x + 'px'; el.style.top = y + 'px';
         document.body.appendChild(el);
 
-        const t1    = setTimeout(() => el.classList.add('warn'),   3000);
-        const t2    = setTimeout(() => el.classList.add('urgent'), 4200);
-        const tExp  = setTimeout(() => expireIcon(el),             EXPIRE_MS);
+        const t1   = setTimeout(() => el.classList.add('warn'),   3000);
+        const t2   = setTimeout(() => el.classList.add('urgent'), 4200);
+        const tExp = setTimeout(() => expireIcon(el),             EXPIRE_MS);
         activeIcons.set(el, {t1, t2, tExp, startedAt: Date.now(), duration: EXPIRE_MS});
 
         el.addEventListener('click', () => {
@@ -987,38 +971,41 @@ elif st.session_state.page == "sudoku":
         activeIcons.delete(el);
         const sad = document.createElement('div');
         sad.className = 'sad-icon';
-        sad.textContent = '😢';
+        sad.textContent = '\uD83D\uDE22';
         sad.style.left = el.style.left; sad.style.top = el.style.top;
         document.body.appendChild(sad);
         el.remove();
         setTimeout(() => sad.remove(), SAD_MS);
       }
 
+      function clearAllIcons() {
+        activeIcons.forEach((entry, el) => {
+          clearTimeout(entry.t1); clearTimeout(entry.t2); clearTimeout(entry.tExp);
+          el.classList.add('clicked');
+          setTimeout(() => el.remove(), 300);
+        });
+        activeIcons.clear();
+      }
+
       function spawnCareCloud() {
-        if (careIndex >= careSequence.length) return;
-        const care = careSequence[careIndex];
+        if (careIndex >= careData.length) return;
         const {x, y} = randomPos();
         const wrapper = document.createElement('div');
         wrapper.className = 'care-cloud';
         wrapper.style.left = x + 'px'; wrapper.style.top = y + 'px';
-        wrapper.innerHTML = `
-          <svg width="120" height="80" viewBox="0 0 120 80" xmlns="http://www.w3.org/2000/svg">
-            <path d="M100,55 Q115,55 115,42 Q115,30 103,30 Q101,18 90,18 Q84,10 74,12 Q66,4 54,8 Q42,4 36,14 Q24,14 22,26 Q12,28 12,40 Q12,55 28,55 Z"
-                  fill="#FDE8D0" stroke="#E07B50" stroke-width="2.5"/>
-          </svg>
-          <div class="cloud-label">${care.letter}</div>`;
+        wrapper.innerHTML = '<svg width="120" height="80" viewBox="0 0 120 80" xmlns="http://www.w3.org/2000/svg"><path d="M100,55 Q115,55 115,42 Q115,30 103,30 Q101,18 90,18 Q84,10 74,12 Q66,4 54,8 Q42,4 36,14 Q24,14 22,26 Q12,28 12,40 Q12,55 28,55 Z" fill="#FDE8D0" stroke="#E07B50" stroke-width="2.5"/></svg><div class="cloud-label">CARE</div>';
         document.body.appendChild(wrapper);
 
         wrapper.addEventListener('click', () => {
           wrapper.remove();
-          pauseGame(care);
+          pauseGame();
         });
       }
 
       // =============================================
       // PAUSE / RESUME
       // =============================================
-      function pauseGame(care) {
+      function pauseGame() {
         paused = true;
         timerPaused = true;
         clearTimeout(nextSpawnId);
@@ -1031,21 +1018,23 @@ elif st.session_state.page == "sudoku":
           el.style.animationPlayState = 'paused';
         });
 
-        // Fill overlay dynamically with this CARE letter's content
-        document.getElementById('overlay-title').textContent = care.title;
+        // Fill overlay with content for current care index
+        const data = careData[careIndex];
+        document.getElementById('overlay-title').textContent = data.title;
         const msgContainer = document.getElementById('overlay-messages');
         msgContainer.innerHTML = '';
         const btn = document.getElementById('resume-btn');
         btn.classList.remove('show');
 
-        care.messages.forEach((msg, i) => {
+        const delays = [0.3, 1.0, 1.8, 2.6, 3.4, 4.2, 5.0];
+        data.msgs.forEach((m, i) => {
           const div = document.createElement('div');
-          div.className = 'message' + (msg.italic ? ' italic' : '');
-          div.textContent = msg.text;
+          div.className = 'message' + (m.italic ? ' italic' : '');
+          div.textContent = m.text;
           msgContainer.appendChild(div);
-          setTimeout(() => div.classList.add('show'), (0.3 + i * 0.8) * 1000);
+          setTimeout(() => div.classList.add('show'), delays[i] * 1000);
         });
-        setTimeout(() => btn.classList.add('show'), (0.3 + care.messages.length * 0.8) * 1000);
+        setTimeout(() => btn.classList.add('show'), delays[data.msgs.length] * 1000);
 
         document.getElementById('pause-overlay').classList.add('visible');
       }
@@ -1055,25 +1044,31 @@ elif st.session_state.page == "sudoku":
       function resumeGame() {
         paused = false;
         timerPaused = false;
-        careIndex++;
         document.getElementById('pause-overlay').classList.remove('visible');
 
-        // Unfreeze icons (restart with remaining time)
-        activeIcons.forEach((entry, el) => {
-          el.style.animationPlayState = '';
-          const remaining = Math.max(entry.remaining || 1000, 500);
-          entry.tExp = setTimeout(() => expireIcon(el), remaining);
-        });
-
-        // Schedule next CARE cloud 15s later (except E which triggers at timer end)
-        if (careIndex < careSequence.length - 1) {
+        if (careIndex === 1) {
+          // After cloud A: clear all icons and stop spawning
+          clearAllIcons();
+          iconsActive = false;
+          careIndex++;
+          // Schedule cloud C after 15s
           nextCareId = setTimeout(spawnCareCloud, 15000);
+        } else {
+          // After cloud R or C: resume/unfreeze icons, schedule next cloud
+          activeIcons.forEach((entry, el) => {
+            el.style.animationPlayState = '';
+            const remaining = Math.max(entry.remaining || 1000, 500);
+            entry.tExp = setTimeout(() => expireIcon(el), remaining);
+          });
+          careIndex++;
+          if (careIndex < careData.length) {
+            nextCareId = setTimeout(spawnCareCloud, 15000);
+          }
+          scheduleNext();
         }
-
-        scheduleNext();
       }
 
-      // First icon spawn after 3s, first CARE cloud (C) after 20s
+      // First icon spawn after 3s, first CARE cloud (R) after 20s
       setTimeout(doSpawn, 3000);
       nextCareId = setTimeout(spawnCareCloud, 20000);
     </script>
