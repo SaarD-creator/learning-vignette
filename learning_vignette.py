@@ -634,6 +634,13 @@ elif st.session_state.page == "sudoku":
         background: #FBBF7A !important;
         transition: background 0.5s;
       }
+      .cell.coach-num {
+        background: #E07B50 !important;
+        color: white !important;
+        font-weight: 900 !important;
+        font-size: 1.6rem !important;
+        transition: background 0.5s;
+      }
 
       /* ---- Floating task icons ---- */
       .task-icon {
@@ -865,10 +872,17 @@ elif st.session_state.page == "sudoku":
             inp.addEventListener('input', () => {
               const v = inp.value.replace(/[^1-9]/g,'');
               inp.value = v ? v[v.length-1] : '';
-              if (!inp.value) { cell.classList.remove('correct','wrong'); return; }
-              const correct = parseInt(inp.value) === solution[r][c];
-              cell.classList.toggle('correct', correct);
-              cell.classList.toggle('wrong',   !correct);
+              if (!inp.value) { cell.classList.remove('correct','wrong'); }
+              else {
+                const correct = parseInt(inp.value) === solution[r][c];
+                cell.classList.toggle('correct', correct);
+                cell.classList.toggle('wrong',   !correct);
+              }
+              // Recalculate coaching hint after every input
+              if (coachingActive) {
+                clearTimeout(coachHintTimeout);
+                showNextHint();
+              }
             });
             cell.appendChild(inp);
           }
@@ -1120,8 +1134,8 @@ elif st.session_state.page == "sudoku":
       }
 
       function clearCoachHighlights() {
-        document.querySelectorAll('.cell.coach-stripe')
-          .forEach(el => el.classList.remove('coach-stripe'));
+        document.querySelectorAll('.cell.coach-stripe, .cell.coach-num')
+          .forEach(el => el.classList.remove('coach-stripe', 'coach-num'));
       }
 
       function showNextHint() {
@@ -1148,8 +1162,7 @@ elif st.session_state.page == "sudoku":
         // The correct answer for that cell
         const targetNum = solution[bestR][bestC];
 
-        // Highlight ALL rows and columns where targetNum already appears
-        // (do NOT highlight the target cell itself)
+        // Find which rows and cols already contain targetNum
         const highlightRows = new Set();
         const highlightCols = new Set();
         for (let r = 0; r < 9; r++)
@@ -1162,14 +1175,15 @@ elif st.session_state.page == "sudoku":
         document.querySelectorAll('.cell').forEach(cell => {
           const r = parseInt(cell.dataset.row);
           const c = parseInt(cell.dataset.col);
-          // Skip the target cell itself
-          if (r === bestR && c === bestC) return;
-          if (highlightRows.has(r) || highlightCols.has(c)) {
-            cell.classList.add('coach-stripe');
+          if (r === bestR && c === bestC) return; // never highlight target cell
+          if (board[r][c] === targetNum) {
+            cell.classList.add('coach-num');       // bold: this cell contains the number
+          } else if (highlightRows.has(r) || highlightCols.has(c)) {
+            cell.classList.add('coach-stripe');    // row/col already has the number
           }
         });
 
-        // Refresh hint every 10s (re-evaluates board state)
+        // Refresh every 10s as fallback
         coachHintTimeout = setTimeout(showNextHint, 10000);
       }
 
