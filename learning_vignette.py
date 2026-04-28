@@ -1135,11 +1135,20 @@ elif st.session_state.page == "sudoku":
 
       function getCurrentBoard() {
         const board = puzzle.map(row => [...row]);
+        // Read user inputs
         document.querySelectorAll('.cell.empty input').forEach(inp => {
           const cell = inp.parentElement;
           const r = parseInt(cell.dataset.row);
           const c = parseInt(cell.dataset.col);
           const v = parseInt(inp.value);
+          if (v >= 1 && v <= 9) board[r][c] = v;
+        });
+        // Read correctly solved cells (converted to fixed spans)
+        document.querySelectorAll('.cell.fixed span').forEach(span => {
+          const cell = span.parentElement;
+          const r = parseInt(cell.dataset.row);
+          const c = parseInt(cell.dataset.col);
+          const v = parseInt(span.textContent);
           if (v >= 1 && v <= 9) board[r][c] = v;
         });
         return board;
