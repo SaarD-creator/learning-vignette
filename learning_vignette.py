@@ -55,6 +55,10 @@ with st.sidebar:
         if st.button("→ Game", key="dev_spel"):
             go_to_spel()
             st.rerun()
+        if st.button("→ Skip to end of sudoku", key="dev_end"):
+            st.session_state.page = "sudoku"
+            st.session_state.skip_to_end = True
+            st.rerun()
 
 
 # ---- CALLBACK: Go to game page ----
@@ -537,6 +541,8 @@ elif st.session_state.page == "care":
 
 elif st.session_state.page == "sudoku":
 
+    skip_to_end = st.session_state.pop("skip_to_end", False)
+
     st.markdown("""
         <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
         <style>
@@ -877,7 +883,22 @@ elif st.session_state.page == "sudoku":
       }
       #finish-btn:hover { transform: scale(1.03); box-shadow: 0 6px 20px rgba(196,102,58,0.5); }
 
-      /* ---- CARE summary grid ---- */
+      #to-summary-btn {
+        margin-top: 1.4rem;
+        padding: 0.7rem 2.2rem;
+        font-family: 'Playfair Display', serif;
+        font-weight: 700;
+        font-size: 1rem;
+        background: linear-gradient(135deg, #C4663A, #E07B50);
+        color: white;
+        border: none;
+        border-radius: 40px;
+        cursor: pointer;
+        box-shadow: 0 4px 16px rgba(196,102,58,0.35);
+        transition: transform 0.15s, box-shadow 0.15s;
+        animation: fadeIn 0.7s forwards;
+      }
+      #to-summary-btn:hover { transform: scale(1.04); box-shadow: 0 6px 20px rgba(196,102,58,0.45); }
       .care-summary-grid {
         display: grid;
         grid-template-columns: 1fr 1fr;
@@ -918,7 +939,6 @@ elif st.session_state.page == "sudoku":
 
     <h1>Solve this Sudoku</h1>
     <p class="subtitle">Make sure to click on every task that appears as well!</p>
-    <button onclick="endGame()" style="position:fixed;top:8px;right:8px;font-size:0.7rem;padding:4px 10px;background:#eee;border:1px solid #ccc;border-radius:20px;cursor:pointer;opacity:0.5;z-index:9999;">⏭ Skip to end</button>
 
     <div id="timer-wrap">
       <div id="timer-display">2:00</div>
@@ -952,8 +972,9 @@ elif st.session_state.page == "sudoku":
     <div id="care-e-overlay">
       <div class="resilience-title">E — Early Feedback</div>
       <div id="care-e-messages"></div>
+      <button id="to-summary-btn" style="display:none;" onclick="showCareSummary()">Next ▶</button>
 
-      <!-- CARE summary, revealed after feedback -->
+      <!-- CARE summary, revealed after clicking next -->
       <div id="care-summary" style="display:none;">
         <div class="care-divider" style="margin-top:1.4rem;"></div>
         <div style="font-family:'Playfair Display',serif;font-weight:900;font-size:1.3rem;color:#6B3A2A;margin-bottom:1rem;opacity:0;animation:fadeIn 0.6s 0.2s forwards;">The CARE Start Program</div>
@@ -1441,7 +1462,8 @@ elif st.session_state.page == "sudoku":
         coachHintTimeout = setTimeout(showNextHint, 10000);
       }
 
-      // First icon spawn after 3s, first CARE cloud (R) after 20s
+      // Skip to end shortcut
+      if (""" + str(skip_to_end).lower() + """) { setTimeout(endGame, 300); }
       setTimeout(doSpawn, 3000);
       nextCareId = setTimeout(spawnCareCloud, 20000);
       // =============================================
@@ -1515,15 +1537,23 @@ elif st.session_state.page == "sudoku":
             container.appendChild(div);
             setTimeout(() => div.classList.add('show'), delays[i] * 1000);
           });
-          // Show finish button after all messages
+          // Show next button after all messages
           const lastDelay = delays[msgs.length - 1] * 1000 + 1000;
           setTimeout(() => {
-            document.getElementById('care-summary').style.display = 'block';
-            setTimeout(() => {
-              document.getElementById('finish-btn').style.display = 'inline-block';
-            }, 800);
+            document.getElementById('to-summary-btn').style.display = 'inline-block';
           }, lastDelay);
         });
+      }
+
+      function showCareSummary() {
+        document.getElementById('to-summary-btn').style.display = 'none';
+        document.getElementById('care-e-messages').style.display = 'none';
+        document.querySelector('#care-e-overlay .resilience-title').style.display = 'none';
+        const summary = document.getElementById('care-summary');
+        summary.style.display = 'block';
+        setTimeout(() => {
+          document.getElementById('finish-btn').style.display = 'inline-block';
+        }, 600);
       }
 
       function showFinalPage() {
