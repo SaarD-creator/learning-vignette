@@ -659,6 +659,33 @@ elif st.session_state.page == "sudoku":
       @keyframes pulse-urgent { from{transform:scale(0.95)} to{transform:scale(1.2)} }
       @keyframes fadeout      { 0%{opacity:1;transform:scale(1)} 60%{opacity:1;transform:scale(1.1)} 100%{opacity:0;transform:scale(0.6)} }
 
+      /* ---- Countdown timer ---- */
+      #timer-wrap {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-bottom: 16px;
+      }
+      #timer-display {
+        font-family: 'Playfair Display', serif;
+        font-weight: 900;
+        font-size: 2.6rem;
+        color: #6B3A2A;
+        letter-spacing: 0.05em;
+        text-shadow: 1px 2px 0 rgba(180,80,40,0.12);
+        line-height: 1;
+        transition: color 0.4s;
+      }
+      #timer-display.warning { color: #C4663A; }
+      #timer-display.urgent  { color: #B02020; animation: pulse-urgent 0.4s ease-in-out infinite alternate; }
+      #timer-label {
+        font-family: 'Crimson Text', serif;
+        font-style: italic;
+        font-size: 0.9rem;
+        color: #A0624A;
+        margin-top: 2px;
+      }
+
       /* ---- CARE cloud ---- */
       .care-cloud {
         position: fixed;
@@ -744,6 +771,12 @@ elif st.session_state.page == "sudoku":
 
     <h1>Solve this Sudoku</h1>
     <p class="subtitle">Make sure to click on every task that appears as well!</p>
+
+    <div id="timer-wrap">
+      <div id="timer-display">2:00</div>
+      <div id="timer-label">Time remaining</div>
+    </div>
+
     <div id="sudoku"></div>
 
     <!-- Pause overlay -->
@@ -761,6 +794,28 @@ elif st.session_state.page == "sudoku":
     </div>
 
     <script>
+      // =============================================
+      // COUNTDOWN TIMER
+      // =============================================
+      let timerSeconds = 120;
+      let timerPaused  = false;
+
+      function updateTimerDisplay() {
+        const m = Math.floor(timerSeconds / 60);
+        const s = timerSeconds % 60;
+        const display = document.getElementById('timer-display');
+        display.textContent = m + ':' + s.toString().padStart(2, '0');
+        display.classList.remove('warning', 'urgent');
+        if (timerSeconds <= 15)       display.classList.add('urgent');
+        else if (timerSeconds <= 30)  display.classList.add('warning');
+      }
+
+      setInterval(() => {
+        if (timerPaused || timerSeconds <= 0) return;
+        timerSeconds--;
+        updateTimerDisplay();
+      }, 1000);
+
       // =============================================
       // SUDOKU
       // =============================================
@@ -920,6 +975,7 @@ elif st.session_state.page == "sudoku":
       // =============================================
       function pauseGame() {
         paused = true;
+        timerPaused = true;
         clearTimeout(nextSpawnId);
 
         // Freeze all active icons
@@ -949,6 +1005,7 @@ elif st.session_state.page == "sudoku":
 
       function resumeGame() {
         paused = false;
+        timerPaused = false;
         document.getElementById('pause-overlay').classList.remove('visible');
 
         // Unfreeze icons (restart with remaining time)
