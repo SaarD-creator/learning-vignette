@@ -557,7 +557,7 @@ elif st.session_state.page == "sudoku":
         display: flex;
         flex-direction: column;
         align-items: center;
-        padding: 18px 16px 30px;
+        padding: 10px 16px 16px;
         font-family: 'Crimson Text', serif;
         min-height: 100vh;
         overflow: hidden;
@@ -566,19 +566,19 @@ elif st.session_state.page == "sudoku":
       h1 {
         font-family: 'Playfair Display', serif;
         font-weight: 900;
-        font-size: 2rem;
+        font-size: 1.7rem;
         color: #6B3A2A;
         text-align: center;
-        margin-bottom: 4px;
+        margin-bottom: 2px;
         text-shadow: 1px 2px 0 rgba(180,80,40,0.12);
       }
       .subtitle {
         font-family: 'Crimson Text', serif;
         font-style: italic;
-        font-size: 1rem;
+        font-size: 0.95rem;
         color: #A0624A;
         text-align: center;
-        margin-bottom: 18px;
+        margin-bottom: 8px;
       }
 
       /* ---- Sudoku grid ---- */
@@ -664,12 +664,12 @@ elif st.session_state.page == "sudoku":
         display: flex;
         flex-direction: column;
         align-items: center;
-        margin-bottom: 16px;
+        margin-bottom: 8px;
       }
       #timer-display {
         font-family: 'Playfair Display', serif;
         font-weight: 900;
-        font-size: 2.6rem;
+        font-size: 2.2rem;
         color: #6B3A2A;
         letter-spacing: 0.05em;
         text-shadow: 1px 2px 0 rgba(180,80,40,0.12);
@@ -781,15 +781,8 @@ elif st.session_state.page == "sudoku":
 
     <!-- Pause overlay -->
     <div id="pause-overlay">
-      <div class="pause-icon">⏸️</div>
-      <div class="resilience-title">R — Resilience Training</div>
-      <div class="message italic" id="m1">Take a deep breath. 🌿</div>
-      <div class="message" id="m2">Every puzzle has a solution — just like every challenge in healthcare.</div>
-      <div class="message italic" id="m3">You are capable of more than you think. 💛</div>
-      <div class="message" id="m4">Stress narrows your focus. A moment of stillness opens it back up.</div>
-      <div class="message italic" id="m5">Resilience isn't about going faster — it's about going smarter.</div>
-      <div class="message" id="m6">Just like in nursing: structured pauses and self-compassion make you stronger, not weaker.</div>
-      <div class="message italic" id="m7">You don't need to solve everything at once. 🌱</div>
+      <div class="resilience-title" id="overlay-title"></div>
+      <div id="overlay-messages"></div>
       <button id="resume-btn">▶ Continue</button>
     </div>
 
@@ -814,6 +807,9 @@ elif st.session_state.page == "sudoku":
         if (timerPaused || timerSeconds <= 0) return;
         timerSeconds--;
         updateTimerDisplay();
+        if (timerSeconds === 0 && careIndex === careSequence.length - 1) {
+          spawnCareCloud();
+        }
       }, 1000);
 
       // =============================================
@@ -884,10 +880,60 @@ elif st.session_state.page == "sudoku":
       const EXPIRE_MS = 5000;
       const SAD_MS    = 2000;
 
-      let paused        = false;
-      let careShown     = false;
-      let nextSpawnId   = null;
-      const gameStart   = Date.now();
+      const careSequence = [
+        {
+          letter: 'C',
+          title: 'C — Coaching',
+          messages: [
+            { text: 'You are not alone in this. 🤝', italic: true },
+            { text: 'Great nurses are made, not born — coaching makes the difference.' },
+            { text: "Reach out to your mentor. That's exactly what they're there for. 💛", italic: true },
+            { text: 'Asking for guidance is not a weakness. It\'s wisdom.' },
+            { text: 'Every expert was once a beginner who kept asking questions.', italic: true },
+          ]
+        },
+        {
+          letter: 'A',
+          title: 'A — Adaptation Support',
+          messages: [
+            { text: 'Adapting takes time. Be patient with yourself. 🌱', italic: true },
+            { text: 'Every new environment has a learning curve — you are right on track.' },
+            { text: 'Change is uncomfortable. Growth is too. Both are worth it. 💛', italic: true },
+            { text: "You don't need to have it all figured out yet." },
+            { text: 'Support is around you — let yourself lean on it.', italic: true },
+          ]
+        },
+        {
+          letter: 'R',
+          title: 'R — Resilience Training',
+          messages: [
+            { text: 'Take a deep breath. 🌿', italic: true },
+            { text: 'Every puzzle has a solution — just like every challenge in healthcare.' },
+            { text: 'You are capable of more than you think. 💛', italic: true },
+            { text: 'Stress narrows your focus. A moment of stillness opens it back up.' },
+            { text: "Resilience isn't about going faster — it's about going smarter.", italic: true },
+            { text: 'Just like in nursing: structured pauses and self-compassion make you stronger, not weaker.' },
+            { text: "You don't need to solve everything at once. 🌱", italic: true },
+          ]
+        },
+        {
+          letter: 'E',
+          title: 'E — Early Feedback',
+          messages: [
+            { text: "Take a moment to reflect on how you're doing. 🌿", italic: true },
+            { text: 'Early feedback helps you grow faster and feel more confident.' },
+            { text: 'Sharing how you feel is the first step to getting better support. 💛', italic: true },
+            { text: "You've made it through the challenge. That matters." },
+            { text: 'Reflection today builds the resilience of tomorrow.', italic: true },
+          ]
+        }
+      ];
+
+      let careIndex   = 0;
+      let paused      = false;
+      let nextSpawnId = null;
+      let nextCareId  = null;
+      const gameStart = Date.now();
 
       // Track active icons for pause/resume
       const activeIcons = new Map(); // el → {t1,t2,tExp,remaining,startedAt}
@@ -899,20 +945,17 @@ elif st.session_state.page == "sudoku":
 
       function doSpawn() {
         if (paused) return;
-        if (!careShown && Date.now() - gameStart >= 20000) {
-          careShown = true;
-          spawnCareCloud();
-        } else {
-          spawnIcon();
-        }
+        spawnIcon();
         scheduleNext();
       }
 
       function randomPos() {
         const margin = 65;
+        const W = document.documentElement.clientWidth  || window.innerWidth;
+        const H = document.documentElement.clientHeight || window.innerHeight;
         return {
-          x: margin + Math.random() * (window.innerWidth  - margin*2),
-          y: margin + Math.random() * (window.innerHeight - margin*2)
+          x: margin + Math.random() * (W - margin * 2),
+          y: margin + Math.random() * (H - margin * 2)
         };
       }
 
@@ -952,6 +995,8 @@ elif st.session_state.page == "sudoku":
       }
 
       function spawnCareCloud() {
+        if (careIndex >= careSequence.length) return;
+        const care = careSequence[careIndex];
         const {x, y} = randomPos();
         const wrapper = document.createElement('div');
         wrapper.className = 'care-cloud';
@@ -961,22 +1006,23 @@ elif st.session_state.page == "sudoku":
             <path d="M100,55 Q115,55 115,42 Q115,30 103,30 Q101,18 90,18 Q84,10 74,12 Q66,4 54,8 Q42,4 36,14 Q24,14 22,26 Q12,28 12,40 Q12,55 28,55 Z"
                   fill="#FDE8D0" stroke="#E07B50" stroke-width="2.5"/>
           </svg>
-          <div class="cloud-label">CARE</div>`;
+          <div class="cloud-label">${care.letter}</div>`;
         document.body.appendChild(wrapper);
 
         wrapper.addEventListener('click', () => {
           wrapper.remove();
-          pauseGame();
+          pauseGame(care);
         });
       }
 
       // =============================================
       // PAUSE / RESUME
       // =============================================
-      function pauseGame() {
+      function pauseGame(care) {
         paused = true;
         timerPaused = true;
         clearTimeout(nextSpawnId);
+        clearTimeout(nextCareId);
 
         // Freeze all active icons
         activeIcons.forEach((entry, el) => {
@@ -985,20 +1031,23 @@ elif st.session_state.page == "sudoku":
           el.style.animationPlayState = 'paused';
         });
 
-        // Show overlay and reveal messages
-        const overlay = document.getElementById('pause-overlay');
-        overlay.classList.add('visible');
+        // Fill overlay dynamically with this CARE letter's content
+        document.getElementById('overlay-title').textContent = care.title;
+        const msgContainer = document.getElementById('overlay-messages');
+        msgContainer.innerHTML = '';
+        const btn = document.getElementById('resume-btn');
+        btn.classList.remove('show');
 
-        const delays = [0.3, 1.0, 1.8, 2.6, 3.4, 4.2, 5.0, 5.9];
-        ['m1','m2','m3','m4','m5','m6','m7'].forEach((id, i) => {
-          setTimeout(() => {
-            const el = document.getElementById(id);
-            if (el) el.classList.add('show');
-          }, delays[i] * 1000);
+        care.messages.forEach((msg, i) => {
+          const div = document.createElement('div');
+          div.className = 'message' + (msg.italic ? ' italic' : '');
+          div.textContent = msg.text;
+          msgContainer.appendChild(div);
+          setTimeout(() => div.classList.add('show'), (0.3 + i * 0.8) * 1000);
         });
-        setTimeout(() => {
-          document.getElementById('resume-btn').classList.add('show');
-        }, delays[7] * 1000);
+        setTimeout(() => btn.classList.add('show'), (0.3 + care.messages.length * 0.8) * 1000);
+
+        document.getElementById('pause-overlay').classList.add('visible');
       }
 
       document.getElementById('resume-btn').addEventListener('click', resumeGame);
@@ -1006,6 +1055,7 @@ elif st.session_state.page == "sudoku":
       function resumeGame() {
         paused = false;
         timerPaused = false;
+        careIndex++;
         document.getElementById('pause-overlay').classList.remove('visible');
 
         // Unfreeze icons (restart with remaining time)
@@ -1015,10 +1065,16 @@ elif st.session_state.page == "sudoku":
           entry.tExp = setTimeout(() => expireIcon(el), remaining);
         });
 
+        // Schedule next CARE cloud 15s later (except E which triggers at timer end)
+        if (careIndex < careSequence.length - 1) {
+          nextCareId = setTimeout(spawnCareCloud, 15000);
+        }
+
         scheduleNext();
       }
 
-      // First spawn after 3 seconds
+      // First icon spawn after 3s, first CARE cloud (C) after 20s
       setTimeout(doSpawn, 3000);
+      nextCareId = setTimeout(spawnCareCloud, 20000);
     </script>
-    """, height=640, scrolling=False)
+    """, height=720, scrolling=False)
