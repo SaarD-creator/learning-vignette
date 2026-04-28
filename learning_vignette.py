@@ -45,6 +45,9 @@ if "start_time_vraag" not in st.session_state:
 if "time_up_reveal" not in st.session_state:
     st.session_state.time_up_reveal = False
 
+if "last_answer_msg" not in st.session_state:
+    st.session_state.last_answer_msg = None
+
 # ---- DEV SHORTCUTS: sidebar expander to jump to any page ----
 with st.sidebar:
     with st.expander("🛠️ Dev shortcuts"):
@@ -162,15 +165,25 @@ if st.session_state.page == "vraag":
         # Still answering — show submit button
         if st.button("Submit answer"):
             if 30 <= waarde <= 31:
-                st.success("Correct! Well done. The actual percentage is 30.02%.")
                 st.session_state.feedback_given = True
-                st.button("Go to the next page", on_click=go_to_spel)
+                st.session_state.last_answer_msg = ("success", "Correct! Well done. The actual percentage is 30.02%.")
             elif 20 <= waarde <= 40:
-                st.info("You're close! The correct answer is 30.02%.")
                 st.session_state.feedback_given = True
-                st.button("Go to the next page", on_click=go_to_spel)
+                st.session_state.last_answer_msg = ("info", "You're close! The correct answer is 30.02%.")
             else:
-                st.error("Not quite — try again!")
+                st.session_state.last_answer_msg = ("error", "Not quite — try again!")
+
+        if st.session_state.get("last_answer_msg"):
+            kind, msg = st.session_state.last_answer_msg
+            if kind == "success":
+                st.success(msg)
+            elif kind == "info":
+                st.info(msg)
+            else:
+                st.error(msg)
+
+        if st.session_state.feedback_given:
+            st.button("Go to the next page", on_click=go_to_spel)
 
     else:
         # Already answered correctly/close enough — show next button
@@ -192,12 +205,16 @@ elif st.session_state.page == "spel":
 
     st_autorefresh(interval=1000, key="refresh")
 
-    if st.session_state.task_count < 3:
-        interval = 5
-    elif st.session_state.task_count < 6:
-        interval = 3
-    else:
+    if st.session_state.task_count < 2:
+        interval = 4
+    elif st.session_state.task_count < 4:
+        interval = 2.5
+    elif st.session_state.task_count < 8:
+        interval = 1.5
+    elif st.session_state.task_count < 12:
         interval = 1
+    else:
+        interval = 0.5
 
     if not st.session_state.game_over and st.session_state.task_count < 36:
         if time.time() - st.session_state.last_task_time > interval:
