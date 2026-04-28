@@ -203,7 +203,7 @@ elif st.session_state.page == "spel":
     st.title("Hospital Shift Simulator")
     st.write("Tasks appear while you work. Try to keep up.")
 
-    st_autorefresh(interval=1000, key="refresh")
+    st_autorefresh(interval=300, key="refresh")
 
     if st.session_state.task_count < 2:
         interval = 4
