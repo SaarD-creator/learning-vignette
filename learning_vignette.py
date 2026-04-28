@@ -1425,33 +1425,33 @@ elif st.session_state.page == "sudoku":
         {
           title: 'R — Resilience Training',
           msgs: [
-            { id:'m1', text:'Take a deep breath. 🌿', italic:true },
-            { id:'m2', text:'Every puzzle has a solution — just like every challenge in healthcare.' },
-            { id:'m3', text:'You are capable of more than you think. 💛', italic:true },
-            { id:'m4', text:'Stress narrows your focus. A moment of stillness opens it back up.' },
-            { id:'m5', text:'Resilience is not about going faster — it is about going smarter.', italic:true },
-            { id:'m6', text:'Just like in nursing: structured pauses and self-compassion make you stronger, not weaker.' },
-            { id:'m7', text:'You do not need to solve everything at once. 🌱', italic:true }
+            { id:'m1', text:'Working in healthcare means carrying a high emotional and mental load. That takes real strength. 🌿', italic:true },
+            { id:'m2', text:'Resilience training is one of the four pillars of the CARE START Program — because mental well-being is not a luxury, it is a foundation.' },
+            { id:'m3', text:'It includes learning to manage stress, cope with difficult situations, and build self-confidence over time. 💛', italic:true },
+            { id:'m4', text:'Structured debriefs and access to psychological support help you process what is hard — before it becomes too heavy.' },
+            { id:'m5', text:'The CARE START approach embeds this support preventively — not only when problems arise, but from day one.', italic:true },
+            { id:'m6', text:'A pause like this one is not a weakness. It is exactly what resilience looks like in practice.' },
+            { id:'m7', text:'Take a breath. You are doing better than you think. 🌱', italic:true }
           ]
         },
         {
           title: 'A — Adaptation Support',
           msgs: [
-            { id:'m1', text:'Adapting to a new role takes time — and that is perfectly normal.', italic:true },
-            { id:'m2', text:'You are not expected to know everything from day one.' },
-            { id:'m3', text:'Support is not a sign of weakness. It is how we grow together. 💛', italic:true },
-            { id:'m4', text:'Lean on your team. Ask questions. Adapt at your own pace.' },
-            { id:'m5', text:'Every small step forward counts. 🌱', italic:true }
+            { id:'m1', text:'Starting a new role in healthcare is not just a professional transition — it is a personal one too.', italic:true },
+            { id:'m2', text:'The CARE START Program recognises this through its Adaptation Support pillar: a phased entry where you gradually take on more responsibility, rather than being thrown in at the deep end.' },
+            { id:'m3', text:'Before you even start, realistic job previews help align your expectations with the reality of the workplace — reducing the risk of transition shock. 💛', italic:true },
+            { id:'m4', text:'To reflect this, the floating tasks will now disappear. Just like in a well-supported onboarding, the pressure is deliberately reduced so you can focus on what matters most.' },
+            { id:'m5', text:'You are not expected to handle everything at once. Adapting takes time — and that is by design. 🌱', italic:true }
           ]
         },
         {
           title: 'C — Coaching',
           msgs: [
-            { id:'m1', text:'A good coach can change everything. 🤝', italic:true },
-            { id:'m2', text:'Coaching is not about fixing what is broken — it is about unlocking what is possible.' },
-            { id:'m3', text:'Share what you need. Your supervisor is there to support you. 💛', italic:true },
-            { id:'m4', text:'You grow faster when you learn alongside someone who guides you.' },
-            { id:'m5', text:'Asking for help is not a step back. It is a step forward. 🌱', italic:true }
+            { id:'m1', text:'Every new healthcare professional deserves a guide. 🤝', italic:true },
+            { id:'m2', text:'The Coaching pillar of the CARE START Program pairs each new employee with a dedicated, experienced mentor — someone who provides not just technical support, but also social and emotional guidance.' },
+            { id:'m3', text:'Regular check-ins during the first months ensure you can ask questions, voice uncertainties, and feel less alone. 💛', italic:true },
+            { id:'m4', text:'For HR, this means carefully selecting and training mentors — and giving them the time and resources to truly fulfil that role.' },
+            { id:'m5', text:'Asking for support is not a step back. It is one of the most professional things you can do. 🌱', italic:true }
           ]
         }
       ];
@@ -1543,10 +1543,17 @@ elif st.session_state.page == "sudoku":
         wrapper.innerHTML = '<svg width="120" height="80" viewBox="0 0 120 80" xmlns="http://www.w3.org/2000/svg"><path d="M100,55 Q115,55 115,42 Q115,30 103,30 Q101,18 90,18 Q84,10 74,12 Q66,4 54,8 Q42,4 36,14 Q24,14 22,26 Q12,28 12,40 Q12,55 28,55 Z" fill="#FDE8D0" stroke="#E07B50" stroke-width="2.5"/></svg><div class="cloud-label">CARE</div>';
         document.body.appendChild(wrapper);
 
-        wrapper.addEventListener('click', () => {
+        let triggered = false;
+        function trigger() {
+          if (triggered) return;
+          triggered = true;
           wrapper.remove();
           pauseGame();
-        });
+        }
+
+        wrapper.addEventListener('click', trigger);
+        // Auto-trigger after 7 seconds if not clicked
+        setTimeout(trigger, 7000);
       }
 
       // =============================================
