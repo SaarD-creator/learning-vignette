@@ -6,8 +6,6 @@ import random
 import time
 from streamlit_autorefresh import st_autorefresh
 
-st.set_page_config(initial_sidebar_state="collapsed")
-
 # ---- SESSION STATE INIT ----
 
 if "page" not in st.session_state:
@@ -54,26 +52,6 @@ if "last_answer_msg" not in st.session_state:
 
 # ---- DEV SHORTCUTS: sidebar expander to jump to any page ----
 with st.sidebar:
-    st.markdown("""
-        <style>
-        /* Make collapse buttons more visible */
-        [data-testid="stSidebarCollapseButton"] button,
-        [data-testid="collapsedControl"] button {
-            background: #e8e8e8 !important;
-            border-radius: 50% !important;
-            border: 1px solid #ccc !important;
-            opacity: 1 !important;
-        }
-        /* Hint text pinned just below the header */
-        .sidebar-hint {
-            font-size: 0.75rem;
-            color: #999;
-            text-align: center;
-            padding: 0.2rem 0 0.8rem 0;
-        }
-        </style>
-        <div class="sidebar-hint">Use the arrow buttons to close this panel</div>
-    """, unsafe_allow_html=True)
     with st.expander("🛠️ Dev shortcuts"):
         if st.button("→ CARE start program", key="dev_care"):
             st.session_state.page = "care"
@@ -134,8 +112,8 @@ if st.session_state.page == "vraag":
         st.session_state.start_time_vraag = time.time()
 
     elapsed   = time.time() - st.session_state.start_time_vraag
-    remaining = max(0, 25 - int(elapsed))
-    time_up   = elapsed >= 25
+    remaining = max(0, 30 - int(elapsed))
+    time_up   = elapsed >= 30
 
     # Auto-refresh every second while timer is running and not yet correct
     if not time_up and not st.session_state.feedback_given:
@@ -143,7 +121,7 @@ if st.session_state.page == "vraag":
 
     # ---- Countdown bar at the very top ----
     if not st.session_state.feedback_given and not time_up:
-        pct = remaining / 25
+        pct = remaining / 30
         bar_color = "#4CAF50" if remaining > 15 else ("#FF9800" if remaining > 8 else "#F44336")
         st.markdown(f"""
             <div style="margin-bottom:1rem;">
@@ -253,32 +231,17 @@ elif st.session_state.page == "spel":
         stress_level = 1
         st.session_state.game_over = True
 
-    # ---- STRESS BAR INLINE ----
-    stress_pct = int(stress_level * 100)
-    if stress_pct < 40:
-        bar_color = "#4CAF50"
-        label = f"{stress_pct}% — Under control"
-    elif stress_pct < 70:
-        bar_color = "#FF9800"
-        label = f"{stress_pct}% — Getting busy!"
-    else:
-        bar_color = "#F44336"
-        label = f"{stress_pct}% — Critical!"
-
-    st.markdown(f"""
-        <div style="margin-bottom:1rem;">
-            <div style="display:flex;justify-content:space-between;
-                        font-size:0.85rem;margin-bottom:4px;">
-                <span>🧠 Stress level</span>
-                <span style="font-weight:700;color:{bar_color};">{label}</span>
-            </div>
-            <div style="background:#eee;border-radius:20px;height:12px;overflow:hidden;">
-                <div style="width:{stress_pct}%;height:100%;
-                            background:{bar_color};border-radius:20px;
-                            transition:width 0.3s ease;"></div>
-            </div>
-        </div>
-    """, unsafe_allow_html=True)
+    # ---- STRESS BAR IN SIDEBAR ----
+    with st.sidebar:
+        st.subheader("🧠 Stress level")
+        st.progress(stress_level)
+        stress_pct = int(stress_level * 100)
+        if stress_pct < 40:
+            st.success(f"{stress_pct}% — Under control")
+        elif stress_pct < 70:
+            st.warning(f"{stress_pct}% — Getting busy!")
+        else:
+            st.error(f"{stress_pct}% — Critical!")
 
     st.subheader("Current tasks")
     for task in st.session_state.active_tasks:
