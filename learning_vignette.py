@@ -114,8 +114,8 @@ if st.session_state.page == "vraag":
         st.session_state.start_time_vraag = time.time()
 
     elapsed   = time.time() - st.session_state.start_time_vraag
-    remaining = max(0, 20 - int(elapsed))
-    time_up   = elapsed >= 20
+    remaining = max(0, 25 - int(elapsed))
+    time_up   = elapsed >= 25
 
     # Auto-refresh every second while timer is running and not yet correct
     if not time_up and not st.session_state.feedback_given:
@@ -123,7 +123,7 @@ if st.session_state.page == "vraag":
 
     # ---- Countdown bar at the very top ----
     if not st.session_state.feedback_given and not time_up:
-        pct = remaining / 20
+        pct = remaining / 25
         bar_color = "#4CAF50" if remaining > 15 else ("#FF9800" if remaining > 8 else "#F44336")
         st.markdown(f"""
             <div style="margin-bottom:1rem;">
@@ -204,15 +204,16 @@ if st.session_state.page == "vraag":
 
 elif st.session_state.page == "spel":
 
-    # Auto-open sidebar
-    st.markdown("""
+    # Auto-open sidebar only if currently collapsed
+    components.html("""
         <script>
-        setTimeout(() => {
+        const sid = window.parent.document.querySelector('[data-testid="stSidebar"]');
+        if (sid && sid.getAttribute('aria-expanded') === 'false') {
             const btn = window.parent.document.querySelector('[data-testid="collapsedControl"]');
             if (btn) btn.click();
-        }, 300);
+        }
         </script>
-    """, unsafe_allow_html=True)
+    """, height=0)
 
     st.title("Hospital Shift Simulator")
     st.write("Tasks appear while you work. Try to keep up.")
@@ -343,15 +344,16 @@ elif st.session_state.page == "spel":
 
 elif st.session_state.page == "info":
 
-    # Auto-close sidebar
-    st.markdown("""
+    # Auto-close sidebar only if currently open
+    components.html("""
         <script>
-        setTimeout(() => {
+        const sid = window.parent.document.querySelector('[data-testid="stSidebar"]');
+        if (sid && sid.getAttribute('aria-expanded') !== 'false') {
             const btn = window.parent.document.querySelector('[data-testid="stSidebarCollapseButton"]');
             if (btn) btn.click();
-        }, 300);
+        }
         </script>
-    """, unsafe_allow_html=True)
+    """, height=0)
 
     st.title("What's really going on?")
 
