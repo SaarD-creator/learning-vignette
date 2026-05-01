@@ -6,6 +6,8 @@ import random
 import time
 from streamlit_autorefresh import st_autorefresh
 
+st.set_page_config(initial_sidebar_state="collapsed")
+
 # ---- SESSION STATE INIT ----
 
 if "page" not in st.session_state:
@@ -52,6 +54,38 @@ if "last_answer_msg" not in st.session_state:
 
 # ---- DEV SHORTCUTS: sidebar expander to jump to any page ----
 with st.sidebar:
+    st.markdown("""
+        <style>
+        /* Always show both sidebar toggle buttons, large and clear */
+        [data-testid="stSidebarCollapseButton"],
+        [data-testid="collapsedControl"] {
+            opacity: 1 !important;
+            visibility: visible !important;
+            display: flex !important;
+        }
+        [data-testid="stSidebarCollapseButton"] button,
+        [data-testid="collapsedControl"] button {
+            opacity: 1 !important;
+            width: 2.8rem !important;
+            height: 2.8rem !important;
+            background: #C4663A !important;
+            border-radius: 50% !important;
+            border: none !important;
+            color: white !important;
+            font-size: 1.3rem !important;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.25) !important;
+        }
+        [data-testid="stSidebarCollapseButton"] button:hover,
+        [data-testid="collapsedControl"] button:hover {
+            background: #E07B50 !important;
+        }
+        </style>
+        <div style="text-align:center; font-size:1rem; font-weight:600;
+                    color:#444; padding: 0.5rem 0 1.2rem 0;
+                    border-bottom: 1px solid #ddd; margin-bottom:0.8rem;">
+            ✕ &nbsp; Use the button above to close this panel
+        </div>
+    """, unsafe_allow_html=True)
     with st.expander("🛠️ Dev shortcuts"):
         if st.button("→ CARE start program", key="dev_care"):
             st.session_state.page = "care"
@@ -112,8 +146,8 @@ if st.session_state.page == "vraag":
         st.session_state.start_time_vraag = time.time()
 
     elapsed   = time.time() - st.session_state.start_time_vraag
-    remaining = max(0, 30 - int(elapsed))
-    time_up   = elapsed >= 30
+    remaining = max(0, 25 - int(elapsed))
+    time_up   = elapsed >= 25
 
     # Auto-refresh every second while timer is running and not yet correct
     if not time_up and not st.session_state.feedback_given:
@@ -121,7 +155,7 @@ if st.session_state.page == "vraag":
 
     # ---- Countdown bar at the very top ----
     if not st.session_state.feedback_given and not time_up:
-        pct = remaining / 30
+        pct = remaining / 25
         bar_color = "#4CAF50" if remaining > 15 else ("#FF9800" if remaining > 8 else "#F44336")
         st.markdown(f"""
             <div style="margin-bottom:1rem;">
@@ -231,17 +265,32 @@ elif st.session_state.page == "spel":
         stress_level = 1
         st.session_state.game_over = True
 
-    # ---- STRESS BAR IN SIDEBAR ----
-    with st.sidebar:
-        st.subheader("🧠 Stress level")
-        st.progress(stress_level)
-        stress_pct = int(stress_level * 100)
-        if stress_pct < 40:
-            st.success(f"{stress_pct}% — Under control")
-        elif stress_pct < 70:
-            st.warning(f"{stress_pct}% — Getting busy!")
-        else:
-            st.error(f"{stress_pct}% — Critical!")
+    # ---- STRESS BAR INLINE ----
+    stress_pct = int(stress_level * 100)
+    if stress_pct < 40:
+        bar_color = "#4CAF50"
+        label = f"{stress_pct}% — Under control"
+    elif stress_pct < 70:
+        bar_color = "#FF9800"
+        label = f"{stress_pct}% — Getting busy!"
+    else:
+        bar_color = "#F44336"
+        label = f"{stress_pct}% — Critical!"
+
+    st.markdown(f"""
+        <div style="margin-bottom:1rem;">
+            <div style="display:flex;justify-content:space-between;
+                        font-size:0.9rem;margin-bottom:4px;">
+                <span>🧠 Stress level</span>
+                <span style="font-weight:700;color:{bar_color};">{label}</span>
+            </div>
+            <div style="background:#eee;border-radius:20px;height:14px;overflow:hidden;">
+                <div style="width:{stress_pct}%;height:100%;
+                            background:{bar_color};border-radius:20px;
+                            transition:width 0.3s ease;"></div>
+            </div>
+        </div>
+    """, unsafe_allow_html=True)
 
     st.subheader("Current tasks")
     for task in st.session_state.active_tasks:
