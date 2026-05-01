@@ -56,19 +56,24 @@ if "last_answer_msg" not in st.session_state:
 with st.sidebar:
     st.markdown("""
         <style>
-        [data-testid="stSidebarCollapseButton"] {
-            opacity: 1 !important;
-            visibility: visible !important;
-        }
-        [data-testid="stSidebarCollapseButton"] button {
-            background: #f0f0f0 !important;
+        /* Make collapse buttons more visible */
+        [data-testid="stSidebarCollapseButton"] button,
+        [data-testid="collapsedControl"] button {
+            background: #e8e8e8 !important;
             border-radius: 50% !important;
-            width: 2rem !important;
-            height: 2rem !important;
+            border: 1px solid #ccc !important;
+            opacity: 1 !important;
+        }
+        /* Hint text pinned just below the header */
+        .sidebar-hint {
+            font-size: 0.75rem;
+            color: #999;
+            text-align: center;
+            padding: 0.2rem 0 0.8rem 0;
         }
         </style>
+        <div class="sidebar-hint">Use the arrow buttons to close this panel</div>
     """, unsafe_allow_html=True)
-    st.caption("← Click the arrow to close this panel")
     with st.expander("🛠️ Dev shortcuts"):
         if st.button("→ CARE start program", key="dev_care"):
             st.session_state.page = "care"
