@@ -54,6 +54,21 @@ if "last_answer_msg" not in st.session_state:
 
 # ---- DEV SHORTCUTS: sidebar expander to jump to any page ----
 with st.sidebar:
+    st.markdown("""
+        <style>
+        [data-testid="stSidebarCollapseButton"] {
+            opacity: 1 !important;
+            visibility: visible !important;
+        }
+        [data-testid="stSidebarCollapseButton"] button {
+            background: #f0f0f0 !important;
+            border-radius: 50% !important;
+            width: 2rem !important;
+            height: 2rem !important;
+        }
+        </style>
+    """, unsafe_allow_html=True)
+    st.caption("← Click the arrow to close this panel")
     with st.expander("🛠️ Dev shortcuts"):
         if st.button("→ CARE start program", key="dev_care"):
             st.session_state.page = "care"
