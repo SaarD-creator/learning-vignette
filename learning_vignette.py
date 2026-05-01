@@ -1,8 +1,12 @@
+# final version? Juist nog mogelijks te lang + zonder stressbalk en incl shortcuts
+
 import streamlit as st
 import streamlit.components.v1 as components
 import random
 import time
 from streamlit_autorefresh import st_autorefresh
+
+st.set_page_config(initial_sidebar_state="collapsed")
 
 # ---- SESSION STATE INIT ----
 
@@ -110,8 +114,8 @@ if st.session_state.page == "vraag":
         st.session_state.start_time_vraag = time.time()
 
     elapsed   = time.time() - st.session_state.start_time_vraag
-    remaining = max(0, 30 - int(elapsed))
-    time_up   = elapsed >= 30
+    remaining = max(0, 20 - int(elapsed))
+    time_up   = elapsed >= 20
 
     # Auto-refresh every second while timer is running and not yet correct
     if not time_up and not st.session_state.feedback_given:
@@ -119,7 +123,7 @@ if st.session_state.page == "vraag":
 
     # ---- Countdown bar at the very top ----
     if not st.session_state.feedback_given and not time_up:
-        pct = remaining / 30
+        pct = remaining / 20
         bar_color = "#4CAF50" if remaining > 15 else ("#FF9800" if remaining > 8 else "#F44336")
         st.markdown(f"""
             <div style="margin-bottom:1rem;">
@@ -199,6 +203,16 @@ if st.session_state.page == "vraag":
 # ======================================================
 
 elif st.session_state.page == "spel":
+
+    # Auto-open sidebar
+    st.markdown("""
+        <script>
+        setTimeout(() => {
+            const btn = window.parent.document.querySelector('[data-testid="collapsedControl"]');
+            if (btn) btn.click();
+        }, 300);
+        </script>
+    """, unsafe_allow_html=True)
 
     st.title("Hospital Shift Simulator")
     st.write("Tasks appear while you work. Try to keep up.")
@@ -328,6 +342,16 @@ elif st.session_state.page == "spel":
 # ======================================================
 
 elif st.session_state.page == "info":
+
+    # Auto-close sidebar
+    st.markdown("""
+        <script>
+        setTimeout(() => {
+            const btn = window.parent.document.querySelector('[data-testid="stSidebarCollapseButton"]');
+            if (btn) btn.click();
+        }, 300);
+        </script>
+    """, unsafe_allow_html=True)
 
     st.title("What's really going on?")
 
