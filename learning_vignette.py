@@ -204,17 +204,6 @@ if st.session_state.page == "vraag":
 
 elif st.session_state.page == "spel":
 
-    # Auto-open sidebar only if currently collapsed
-    components.html("""
-        <script>
-        const sid = window.parent.document.querySelector('[data-testid="stSidebar"]');
-        if (sid && sid.getAttribute('aria-expanded') === 'false') {
-            const btn = window.parent.document.querySelector('[data-testid="collapsedControl"]');
-            if (btn) btn.click();
-        }
-        </script>
-    """, height=0)
-
     st.title("Hospital Shift Simulator")
     st.write("Tasks appear while you work. Try to keep up.")
 
@@ -244,17 +233,32 @@ elif st.session_state.page == "spel":
         stress_level = 1
         st.session_state.game_over = True
 
-    # ---- STRESS BAR IN SIDEBAR ----
-    with st.sidebar:
-        st.subheader("🧠 Stress level")
-        st.progress(stress_level)
-        stress_pct = int(stress_level * 100)
-        if stress_pct < 40:
-            st.success(f"{stress_pct}% — Under control")
-        elif stress_pct < 70:
-            st.warning(f"{stress_pct}% — Getting busy!")
-        else:
-            st.error(f"{stress_pct}% — Critical!")
+    # ---- STRESS BAR INLINE ----
+    stress_pct = int(stress_level * 100)
+    if stress_pct < 40:
+        bar_color = "#4CAF50"
+        label = f"{stress_pct}% — Under control"
+    elif stress_pct < 70:
+        bar_color = "#FF9800"
+        label = f"{stress_pct}% — Getting busy!"
+    else:
+        bar_color = "#F44336"
+        label = f"{stress_pct}% — Critical!"
+
+    st.markdown(f"""
+        <div style="margin-bottom:1rem;">
+            <div style="display:flex;justify-content:space-between;
+                        font-size:0.85rem;margin-bottom:4px;">
+                <span>🧠 Stress level</span>
+                <span style="font-weight:700;color:{bar_color};">{label}</span>
+            </div>
+            <div style="background:#eee;border-radius:20px;height:12px;overflow:hidden;">
+                <div style="width:{stress_pct}%;height:100%;
+                            background:{bar_color};border-radius:20px;
+                            transition:width 0.3s ease;"></div>
+            </div>
+        </div>
+    """, unsafe_allow_html=True)
 
     st.subheader("Current tasks")
     for task in st.session_state.active_tasks:
@@ -343,17 +347,6 @@ elif st.session_state.page == "spel":
 # ======================================================
 
 elif st.session_state.page == "info":
-
-    # Auto-close sidebar only if currently open
-    components.html("""
-        <script>
-        const sid = window.parent.document.querySelector('[data-testid="stSidebar"]');
-        if (sid && sid.getAttribute('aria-expanded') !== 'false') {
-            const btn = window.parent.document.querySelector('[data-testid="stSidebarCollapseButton"]');
-            if (btn) btn.click();
-        }
-        </script>
-    """, height=0)
 
     st.title("What's really going on?")
 
